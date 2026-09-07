@@ -11,6 +11,7 @@ Live: **https://jarlelauch.github.io/porto/**
 - **Tentang** — profil singkat + kartu spesifik `const jarle = { … }`
 - **Keterampilan** — chips 4 kategori
 - **Proyek** — katalog karya (j-sgent, github-profile-blackhole, situs ini)
+- **Demo — naga api** — embed langsung dari halaman naga interaktif (bisa dimainkan di dalam situs)
 - **Kontak** — lewat GitHub
 
 Latar belakang berupa kanvas glif matematika (`Σ π φ ∂ ∞ …`) yang melayang,

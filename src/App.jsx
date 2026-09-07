@@ -186,9 +186,34 @@ function App() {
           </div>
         </section>
 
-        <section className="section shell kontak" id="kontak">
+        <section className="section shell" id="demo">
           <div className="s-head">
             <span className="s-num">04</span>
+            <h2 className="s-name">demo — naga api</h2>
+          </div>
+          <div className="demo-frame">
+            <iframe
+              src="https://jarlelauch.github.io/jarlelauch/naga.html"
+              title="Naga API interaktif — gerakkan kursor, tahan Spasi atau klik untuk nafas api"
+              loading="lazy"
+            />
+          </div>
+          <p className="demo-cap">
+            main langsung di sini — gerakkan kursor · tahan <b>spasi</b> /
+            klik untuk nafas api &middot;{' '}
+            <a
+              href="https://jarlelauch.github.io/jarlelauch/naga.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              layar penuh ↗
+            </a>
+          </p>
+        </section>
+
+        <section className="section shell kontak" id="kontak">
+          <div className="s-head">
+            <span className="s-num">05</span>
             <h2 className="s-name">kontak</h2>
           </div>
           <p className="big">

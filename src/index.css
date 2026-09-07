@@ -397,6 +397,41 @@ a {
   color: var(--gold);
 }
 
+/* ---------- demo ---------- */
+.demo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 12 / 5;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.demo-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.demo-cap {
+  margin: 14px 2px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--dim);
+}
+
+.demo-cap a {
+  color: var(--gold);
+}
+
+.demo-cap a:hover {
+  text-decoration: underline;
+}
+
 /* ---------- contact ---------- */
 .kontak .big {
   font-size: clamp(1.5rem, 3.8vw, 2.2rem);
