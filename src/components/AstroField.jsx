@@ -201,8 +201,8 @@ export default function AstroField() {
                   span.style.borderLeftColor = idx%2 ? 'rgba(198,94,46,0.85)' : 'transparent'
                   // ikut stagger normal kalau section belum .in, pakai delay kecil
                   if(!isIn) span.style.transitionDelay = `${Math.min(idx*14, 180)}ms`
-                  // balance: sebelumnya 14-26 terlalu cepat, 38-58 terlalu lambat → 22-34 biar pas
-                  setTimeout(type, 22 + Math.random()*12)
+                  // balikin cepet 10 detik setelah kehisap
+                  setTimeout(type, 14 + Math.random()*12)
                 } else {
                   span.style.borderLeft='none'
                   span.style.paddingLeft='0'
@@ -232,10 +232,10 @@ export default function AstroField() {
               doType()
             }
           }, 80)
-          setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 900)
+          setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 10000)
         } else {
-          // jeda setelah tertelan: 380ms (tengah antara 420 dan 620, gak kelamaan)
-          setTimeout(doType, 380)
+          // 10 detik setelah kehisap baru mulai ngetik cepet
+          setTimeout(doType, 10000)
         }
       }
     }
