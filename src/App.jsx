@@ -76,7 +76,7 @@ function useReveal() {
           }
         }
       },
-      { threshold: 0.12 },
+      { threshold: 0.10, rootMargin: '0px 0px -10% 0px' },
     )
     obs.observe(el)
     return () => obs.disconnect()
@@ -183,6 +183,7 @@ function App() {
   const tentang = useReveal()
   const keterampilan = useReveal()
   const karya = useReveal()
+  const hero = useReveal()
   const aizen = useReveal()
   const kontak = useReveal()
 
@@ -216,29 +217,29 @@ function App() {
       </header>
 
       <main>
-        <section className="hero shell">
+        <section className="hero shell section" ref={hero}>
           <div className="hero-grid">
             <div className="hero-text">
-              <p className="eyebrow">
+              <p className="eyebrow stagger" style={{ transitionDelay: '60ms' }}>
                 <b>◈</b> orbit : membuka peluang
                 <span className="eyebrow-live">● live sky</span>
               </p>
-              <h1 className="title">
+              <h1 className="title stagger" style={{ transitionDelay: '140ms' }}>
                 <span className="title-line">
                   JARLELAUCH<span className="dot">.</span>
                 </span>
               </h1>
-              <p className="sub">matematika dalam kode — sistem, otomasi, representasi yang presisi</p>
-              <p className="coord">@ asal : 0 . 0 — segalanya valid sebelum nol</p>
-              <div className="formula" role="img" aria-label="e pangkat i pi tambah satu sama dengan nol">
+              <p className="sub stagger" style={{ transitionDelay: '220ms' }}>matematika dalam kode — sistem, otomasi, representasi yang presisi</p>
+              <p className="coord stagger" style={{ transitionDelay: '280ms' }}>@ asal : 0 . 0 — segalanya valid sebelum nol</p>
+              <div className="formula stagger" role="img" aria-label="e pangkat i pi tambah satu sama dengan nol" style={{ transitionDelay: '360ms' }}>
                 <span className="it">e</span>
                 <sup>π</sup> + 1 <span className="eq">= 0</span>
               </div>
-              <p className="lede">
+              <p className="lede stagger" style={{ transitionDelay: '440ms' }}>
                 Aku merancang perangkat lunak seperti menyusun persamaan — mengambil variabel, memangkas
                 yang tak perlu, sampai tersisa hanya kode yang minimal dan konsisten.
               </p>
-              <div className="cta">
+              <div className="cta stagger" style={{ transitionDelay: '520ms' }}>
                 <a className="btn solid" href="#karya">
                   buka karya ↓
                 </a>
@@ -247,7 +248,9 @@ function App() {
                 </a>
               </div>
             </div>
-            <HeroOrbit />
+            <div className="stagger" style={{ transitionDelay: '300ms' }}>
+              <HeroOrbit />
+            </div>
           </div>
         </section>
 
