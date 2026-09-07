@@ -181,6 +181,35 @@ export default function AstroField() {
       const cx0=w/2, cy0=h/2
       const bhX = mouseX - mx, bhY = mouseY - my
 
+      // aizen elastic suck — seperti butiran debu kesedot, balik normal pas menjauh
+      if (!reduce && hasMoved) {
+        const el = document.querySelector('.aizen-frame')
+        if (el) {
+          const r = el.getBoundingClientRect()
+          const ax = r.left + r.width/2
+          const ay = r.top + r.height/2
+          const dx = mouseX - ax
+          const dy = mouseY - ay
+          const d = Math.hypot(dx, dy)
+          if (d < 260) {
+            const pull = (260 - d) / 260
+            const s = 1 - pull * 0.14 * mass * 0.55
+            const tx = dx * 0.055 * pull * mass * 0.42
+            const ty = dy * 0.055 * pull * mass * 0.42
+            el.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`
+            el.style.filter = `brightness(${1 - pull*0.10})`
+            el.style.transition = 'transform 0.12s linear, filter 0.12s linear'
+          } else {
+            el.style.transform = ''
+            el.style.filter = ''
+            el.style.transition = 'transform 0.55s cubic-bezier(0.16,1,0.3,1), filter 0.4s ease'
+          }
+        }
+      } else if (!hasMoved) {
+        const el = document.querySelector('.aizen-frame')
+        if (el) { el.style.transform=''; el.style.filter=''; }
+      }
+
       drawMilkyWay(cx0,cy0)
       drawWarpGrid(cx0,cy0,bhX,bhY,mass)
 
@@ -191,49 +220,47 @@ export default function AstroField() {
       ctx.stroke()
       ctx.fillStyle='rgba(201,173,120,0.28)'; ctx.font='9px ui-monospace, monospace'; ctx.fillText('0,0',cx0+7,cy0-7)
 
-      // glyphs — huruf/angka yang bisa kesedot BH
+      // glyphs — huruf/angka elastic kesedot BH (balik normal pas BH menjauh)
       for(const g of glyphs){
-        // drift slowly
-        g.x += g.drift*0.12
-        g.y += Math.sin(now*0.0003+g.phase)*0.02
+        // base drift sangat pelan (permanen tapi halus)
+        g.x += g.drift*0.004
+        g.y += Math.sin(now*0.0003+g.phase)*0.0006
         if(g.x<0) g.x=1; if(g.x>1) g.x=0
         if(g.y<0) g.y=1; if(g.y>1) g.y=0
-        let px = g.x*w + mx*0.06
-        let py = g.y*h + my*0.06
+        const basePx = g.x*w + mx*0.06
+        const basePy = g.y*h + my*0.06
+        let px = basePx
+        let py = basePy
         let scale = 1
         let alpha = g.baseA + 0.08*Math.sin(now*0.0012+g.phase)
-        // BH suction
+        // BH elastic pull — tidak permanen, balik pas menjauh
         if(!reduce && hasMoved){
-          const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
+          const dx=bhX-basePx, dy=bhY-basePy, d=Math.hypot(dx,dy)
           const horizon = 11+mass*2.6
-          if(d < 140){
-            const pull = mass * 1.9 * Math.exp(-d/46) // stronger when closer
-            // spaghettification: stretch toward BH
+          if(d < 150){
+            const pull = mass * 0.38 * Math.exp(-d/62) // 0..0.38
+            // elastic offset toward BH (tidak ubah g.x)
+            px = basePx + dx * pull
+            py = basePy + dy * pull
             const ang = Math.atan2(dy,dx)
-            // move glyph toward BH
-            g.x += (dx/w)*0.0025*mass
-            g.y += (dy/h)*0.0025*mass
-            // scale down as sucked
-            if(d < 44){
-              scale = Math.max(0.18, d/44)
-              alpha *= scale
+            // mengecil + stretch pas dekat
+            if(d < 58){
+              scale = Math.max(0.42, 0.42 + (d-12)/(58-12)*0.58)
+              alpha *= (0.55 + scale*0.45)
             }
-            // draw stretched trail when very close
-            if(d < 64 && d > horizon){
-              ctx.strokeStyle=`rgba(201,173,120,${alpha*0.22})`
-              ctx.lineWidth=0.7
+            if(d < 78 && d > horizon){
+              ctx.strokeStyle=`rgba(201,173,120,${alpha*0.18})`
+              ctx.lineWidth=0.6
+              ctx.beginPath()
+              ctx.moveTo(basePx,basePy)
+              ctx.lineTo(px,py)
+              ctx.stroke()
+              // spaghettification trail
+              ctx.strokeStyle=`rgba(201,173,120,${alpha*0.10})`
               ctx.beginPath()
               ctx.moveTo(px,py)
-              ctx.lineTo(px + Math.cos(ang)* (64-d)*0.32, py + Math.sin(ang)* (64-d)*0.32)
+              ctx.lineTo(px + Math.cos(ang)*(78-d)*0.22, py + Math.sin(ang)*(78-d)*0.22)
               ctx.stroke()
-            }
-            // if swallowed, respawn far
-            if(d < horizon+2){
-              alpha = 0
-              // respawn at random edge far from BH
-              g.x = Math.random(); g.y = Math.random()
-              // ensure not too close to BH
-              if(Math.hypot(g.x*w - bhX, g.y*h - bhY) < 180){ g.x = (g.x+0.5)%1 }
             }
           }
         }
