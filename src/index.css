@@ -779,9 +779,9 @@ html.bh-active .bh-hint { opacity: 1; }
 .aizen-frame img {
   display: block;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 3 / 4.6;
   object-fit: cover;
-  object-position: top center;
+  object-position: 50% 16%;
   filter: sepia(0.22) contrast(1.08) brightness(0.92) saturate(0.85);
   border: 1px solid rgba(201,173,120,0.12);
 }
