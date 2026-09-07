@@ -755,6 +755,112 @@ html.bh-active .bh-hint { opacity: 1; }
   text-decoration: underline;
 }
 
+/* ---------- aizen ---------- */
+.aizen-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 36px;
+  align-items: start;
+}
+.aizen-frame {
+  position: relative;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(23,20,14,0.82), rgba(12,11,9,0.92));
+  padding: 10px 10px 14px;
+  overflow: hidden;
+}
+.aizen-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(1px 1px at 22% 18%, rgba(233,223,201,0.18) 0, transparent 100%);
+  pointer-events: none;
+}
+.aizen-frame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top center;
+  filter: sepia(0.22) contrast(1.08) brightness(0.92) saturate(0.85);
+  border: 1px solid rgba(201,173,120,0.12);
+}
+.aizen-frame span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: var(--mute);
+  margin-top: 10px;
+  text-align: center;
+}
+.aizen-frame .aizen-cap {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: rgba(201,173,120,0.42);
+  margin-top: 4px;
+  font-style: italic;
+}
+.aizen-quote blockquote {
+  margin: 0;
+  border-left: 2px solid var(--rust);
+  background: linear-gradient(90deg, rgba(198,94,46,0.07), transparent);
+  padding: 18px 20px;
+}
+.aizen-quote .jp {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+.aizen-quote .rm {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.4px;
+  color: var(--mute);
+  margin: 0 0 12px;
+}
+.aizen-quote .id {
+  font-size: 15px;
+  color: var(--paper-dim);
+  margin: 0 0 10px;
+  font-style: italic;
+}
+.aizen-quote footer {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  color: rgba(201,173,120,0.52);
+}
+.aizen-note {
+  margin: 18px 0 0;
+  max-width: 52ch;
+  font-size: 13.5px;
+  color: var(--paper-dim);
+  line-height: 1.7;
+}
+.aizen-note b { color: var(--paper); font-weight: 400; }
+.aizen-tokens {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  color: var(--rust);
+}
+.aizen-tokens span {
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  background: rgba(233,223,201,0.03);
+}
+@media (max-width: 780px) {
+  .aizen-grid { grid-template-columns: 1fr; }
+  .aizen-frame { max-width: 360px; }
+}
+
 /* ---------- contact ---------- */
 .big {
   font-size: clamp(1.5rem, 3.8vw, 2.3rem);

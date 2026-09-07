@@ -187,6 +187,7 @@ function App() {
   const tentang = useReveal()
   const keterampilan = useReveal()
   const karya = useReveal()
+  const aizen = useReveal()
   const kontak = useReveal()
 
   return (
@@ -203,6 +204,9 @@ function App() {
           </li>
           <li>
             <a href="#karya">karya</a>
+          </li>
+          <li>
+            <a href="#aizen">aizen</a>
           </li>
           <li>
             <a href="#kontak">kontak</a>
@@ -345,9 +349,44 @@ function App() {
           ))}
         </section>
 
-        <section className="section shell kontak" id="kontak" ref={kontak}>
+        <section className="section shell aizen" id="aizen" ref={aizen}>
           <div className="s-head">
             <span className="s-num">§04</span>
+            <h2 className="s-name">aizen · 藍染惣右介</h2>
+            <span className="s-meta">— bleach · kyōka suigetsu</span>
+          </div>
+          <div className="aizen-grid">
+            <div className="aizen-frame">
+              <img
+                src="https://cdn.myanimelist.net/images/characters/5/70075.jpg"
+                alt="Aizen Sousuke — Bleach"
+                loading="lazy"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+              />
+              <span>藍染 惣右介 — Aizen Sōsuke</span>
+              <span className="aizen-cap">“sejak awal, tak ada yang berdiri di langit”</span>
+            </div>
+            <div className="aizen-quote">
+              <blockquote>
+                <p className="jp">人間は猿を模倣し、神は人間を模倣する。</p>
+                <p className="rm">Ningen wa saru o mohō shi, kami wa ningen o mohō suru.</p>
+                <p className="id">“Manusia adalah imitasi dari kera, dewa adalah imitasi dari manusia.”</p>
+                <footer>— 藍染 惣右介 · <em>Bleach</em> · 惣右介の箴言</footer>
+              </blockquote>
+              <p className="aizen-note">
+                Ditempatkan di antara karya dan kontak sebagai <b>orbit etika</b>: setiap imitasi menuntut presisi,
+                setiap evolusi menuntut pengkhianatan terhadap bentuk sebelumnya. — minimal, seperti lensing di pusat canvas.
+              </p>
+              <div className="aizen-tokens">
+                <span>模倣</span><span>mohō</span><span>超越</span><span>chōetsu</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section shell kontak" id="kontak" ref={kontak}>
+          <div className="s-head">
+            <span className="s-num">§05</span>
             <h2 className="s-name">kontak</h2>
           </div>
           <p className="big">
