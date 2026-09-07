@@ -144,13 +144,22 @@ export default function AstroField() {
               t = node.textContent
               delRange = nodeRange
             } else {
-              // partial — clamp
+              // partial — hanya handle kalau start/end di text node yang sama (kasus umum)
               delRange = document.createRange()
               try{
-                if(r.compareBoundaryPoints(Range.START_TO_START, nodeRange) > 0) delRange.setStart(r.startContainer, r.startOffset)
-                else delRange.setStart(node, 0)
-                if(r.compareBoundaryPoints(Range.END_TO_END, nodeRange) < 0) delRange.setEnd(r.endContainer, r.endOffset)
-                else delRange.setEnd(node, node.textContent.length)
+                if(r.startContainer === node && r.endContainer === node){
+                  delRange.setStart(node, r.startOffset)
+                  delRange.setEnd(node, r.endOffset)
+                } else if(r.startContainer === node){
+                  delRange.setStart(node, r.startOffset)
+                  delRange.setEnd(node, node.textContent.length)
+                } else if(r.endContainer === node){
+                  delRange.setStart(node, 0)
+                  delRange.setEnd(node, r.endOffset)
+                } else {
+                  // fallback: anggap full (node di tengah seleksi)
+                  delRange = nodeRange
+                }
                 t = delRange.cloneContents().textContent || ""
               }catch{ continue }
               if(!t) continue
