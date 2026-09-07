@@ -18,7 +18,7 @@ const PROJECTS = [
   {
     title: 'github-profile-blackhole',
     desc: 'Profil GitHub yang hidup — black hole, orbit, filotaksis, gelombang pendulum, ditutup seekor naga API (SVG CSS) dan halaman interaktif yang mengejar kursor.',
-    tags: ['SVG', 'CSS', 'JS'],
+    tags: ['SVG', 'CSS', 'JS', 'demo'],
     url: 'https://github.com/jarlelauch/jarlelauch',
     linkLabel: 'profil',
     extra: {
