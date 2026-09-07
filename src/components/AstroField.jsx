@@ -110,10 +110,17 @@ export default function AstroField() {
         })
       }
       if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
-      // clear selection biar kelihatan kesedot
-      try{ sel.removeAllRanges() }catch{}
-      // boost BH biar nyedot ganas — lebih besar pas select
-      massTarget = 2.8; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 1200)
+      // BENERAN HAPUS huruf asli dari DOM biar keliatan kesedot masuk BH (bukan cuman partikel)
+      try{
+        // hapus isi selection biar teks asli hilang dari web
+        for(let i=sel.rangeCount-1;i>=0;i--){
+          const r = sel.getRangeAt(i)
+          try{ r.deleteContents() }catch{}
+        }
+        sel.removeAllRanges()
+      }catch{}
+      // boost BH biar nyedot ganas
+      massTarget = 2.9; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 1400)
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
