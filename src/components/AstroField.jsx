@@ -125,36 +125,66 @@ export default function AstroField() {
       }catch{}
       // boost BH biar nyedot ganas — lebih besar + cepat pas select
       massTarget = 3.0; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
-      // muncul lagi kayak diketik setelah kesedot selesai (900ms + stagger)
+      // muncul lagi kayak diketik — cepet + ikut animasi scroll normal
       if(saved.length){
-        const allText = saved.map(s=>s.text).join('')
-        // kembalikan dalam 1100ms setelah partikel mulai masuk BH
-        setTimeout(()=>{
-          // sisipkan span kosong di posisi semula, lalu ketik 1-1
+        // cepetin ketik 14-26ms per huruf (sebelum 28-60ms)
+        const doType = ()=>{
           for(const { text, range } of saved){
             try{
               const span = document.createElement('span')
+              span.className = 'stagger'
               span.style.borderLeft='1.5px solid rgba(198,94,46,0.85)'
               span.style.paddingLeft='1px'
+              span.style.transitionDelay='0ms'
+              // jika section induk sudah .in, paksa visible
+              const sec = range.startContainer.parentElement?.closest('.section')
+              const isIn = sec?.classList.contains('in')
+              if(isIn) span.style.opacity='1'; else span.classList.add('stagger')
               range.insertNode(span)
               let idx=0
               const chars = text.split('')
               const type = ()=>{
                 if(idx < chars.length){
-                  // sisipkan huruf + hapus border blink di akhir
                   span.textContent += chars[idx++]
-                  // cursor blink
                   span.style.borderLeftColor = idx%2 ? 'rgba(198,94,46,0.85)' : 'transparent'
-                  setTimeout(type, 28 + Math.random()*32)
+                  // ikut stagger normal kalau section belum .in, pakai delay kecil
+                  if(!isIn) span.style.transitionDelay = `${Math.min(idx*14, 180)}ms`
+                  setTimeout(type, 14 + Math.random()*12)
                 } else {
                   span.style.borderLeft='none'
                   span.style.paddingLeft='0'
+                  span.style.opacity='1'
+                  span.style.transform='none'
                 }
               }
               type()
             }catch{}
           }
-        }, 1100)
+        }
+        // jika user lagi scroll kebawah, tunda sampai section masuk viewport biar ngikut animasi load normal
+        const needScroll = saved.some(({ range })=>{
+          const el = range.startContainer.parentElement?.closest('.section')
+          return el && !el.classList.contains('in')
+        })
+        if(needScroll){
+          // tunggu scroll — cek tiap 80ms sampai section .in, baru ketik
+          let tries=0
+          const waitScroll = setInterval(()=>{
+            tries++
+            const ready = saved.every(({ range })=>{
+              const el = range.startContainer.parentElement?.closest('.section')
+              return !el || el.classList.contains('in')
+            })
+            if(ready || tries>40){
+              clearInterval(waitScroll)
+              doType()
+            }
+          }, 80)
+          // fallback tetap ketik setelah 900ms kalau tidak scroll
+          setTimeout(()=>{ clearInterval(waitScroll); if(document.body.contains(saved[0]?.range.startContainer)===false) doType() }, 900)
+        } else {
+          setTimeout(doType, 420)
+        }
       }
     }
     window.addEventListener('mousemove', onMove)
