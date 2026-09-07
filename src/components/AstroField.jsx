@@ -68,172 +68,114 @@ export default function AstroField() {
       const cx=(e.clientX/w-0.5)*2, cy=(e.clientY/h-0.5)*2
       tx=cx*12; ty=cy*10
     }
-    const onDown = () => { mouseDown=true; massTarget=2.2 }
-    const onUp = () => {
-      mouseDown=false; massTarget=1
-      // select-suck — pas select tulisan, hurufnya beneran kesedot masuk BH
+    const onDown = (e) => { 
+      if(e && e.button===2) { mouseDown=true; massTarget=3.0; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900) }
+      else { mouseDown=true; massTarget=2.2 }
+    }
+    const onRightClick = (e) => {
+      e.preventDefault()
       if(reduce) return
-      const sel = window.getSelection()
-      if(!sel || sel.isCollapsed || !sel.rangeCount) return
-      const text = sel.toString()
-      if(!text || text.trim().length < 1) return
-      // ambil rects dari selection
-      let rects=[]
-      for(let i=0;i<sel.rangeCount;i++){
+      // klik kanan = hisap (pakai horizontal band + radius, tanpa UI)
+      if(!hasMoved){ mouseX=e.clientX; mouseY=e.clientY; hasMoved=true; document.documentElement.classList.add('bh-active') }
+      else { mouseX=e.clientX; mouseY=e.clientY }
+      massTarget = 3.2; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
+      // cari huruf/angka di sekitar kursor kanan
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode: (node) => {
+          if(!node.textContent || node.textContent.trim().length===0) return NodeFilter.FILTER_REJECT
+          if(node.parentElement?.closest('#axis-field, .hero-orbit, canvas, svg, nav')) return NodeFilter.FILTER_REJECT
+          return NodeFilter.FILTER_ACCEPT
+        }
+      })
+      const cands=[]
+      let nn
+      while(nn = walker.nextNode()){
         try{
-          const r = sel.getRangeAt(i)
-          const rs = r.getClientRects()
-          for(let j=0;j<rs.length;j++) rects.push(rs[j])
+          const r = document.createRange()
+          r.selectNodeContents(nn)
+          const rects = Array.from(r.getClientRects())
+          if(rects.length===0) continue
+          let minD=Infinity
+          for(const rc of rects){
+            const d = Math.hypot((rc.left+rc.width/2)-e.clientX, (rc.top+rc.height/2)-e.clientY)
+            if(d < 110) minD = Math.min(minD, d)
+          }
+          if(minD < 110) cands.push({node:nn, rects, dist:minD})
         }catch{}
       }
-      if(rects.length===0) return
-      // untuk tiap huruf di text, spawn partikel di posisi acak dalam rects
-      const chars = text.replace(/\s+/g, '').split('').slice(0, 80) // limit 80 biar tidak spam
-      if(chars.length===0) return
-      for(const ch of chars){
-        const rc = rects[Math.floor(Math.random()*rects.length)]
-        const sx = rc.left + Math.random()*rc.width
-        const sy = rc.top + rc.height*0.55 + (Math.random()-0.5)*4
-        // arah langsung ke BH biar beneran kesedot (bug kemarin random jadi tidak ketarik)
-        const dx0 = mouseX - sx, dy0 = mouseY - sy
-        const d0 = Math.hypot(dx0, dy0) || 1
-        const ang0 = Math.atan2(dy0, dx0)
-        const speed = 78 + Math.random()*34
-        selectDust.push({
-          ch, x: sx, y: sy,
-          vx: Math.cos(ang0)*speed + (Math.random()-0.5)*12,
-          vy: Math.sin(ang0)*speed + (Math.random()-0.5)*12,
-          size: 14 + Math.random()*6,
-          a: 1, life: 1,
-          spin: (Math.random()-0.5)*0.28,
-          rot: Math.random()*Math.PI*2,
-        })
-      }
-      if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
-      // BENERAN HAPUS huruf asli — FIX bug: marker jangan di-insert sebelum delete (kehapus), insert setelah delete
-      const saved = []
-      const bhX0 = hasMoved ? mouseX : w/2
-      const bhY0 = hasMoved ? mouseY : h/2
-      // cache presisi tinggi: simpan per text-node biar posisi & font balik persis
-      // separator: kalau dalam satu paragraf font & kapital sama, huruf boleh tertukar (pakai cacheKey), kalau beda harus balik ke tempat asal
-      const cache = new Map()
-      try{
-        for(let i=sel.rangeCount-1;i>=0;i--){
-          const r = sel.getRangeAt(i)
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-            acceptNode: (node) => {
-              if(!r.intersectsNode(node)) return NodeFilter.FILTER_REJECT
-              if(node.parentElement?.closest('#axis-field, .hero-orbit, canvas, svg')) return NodeFilter.FILTER_REJECT
-              if(!node.textContent) return NodeFilter.FILTER_REJECT
-              return NodeFilter.FILTER_ACCEPT
-            }
-          })
-          const nodes=[]
-          let n
-          while(n = walker.nextNode()) nodes.push(n)
-          if(nodes.length===0) continue
-          for(let k=nodes.length-1;k>=0;k--){
-            const node = nodes[k]
-            const nodeRange = document.createRange()
-            nodeRange.selectNodeContents(node)
-            let t=""
-            let delRange=null
-            const sBefore = r.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0
-            const eAfter = r.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0
-            if(sBefore && eAfter){
-              t = node.textContent
-              delRange = nodeRange
-            } else {
-              delRange = document.createRange()
-              try{
-                if(r.startContainer === node && r.endContainer === node){
-                  delRange.setStart(node, r.startOffset)
-                  delRange.setEnd(node, r.endOffset)
-                } else if(r.startContainer === node){
-                  delRange.setStart(node, r.startOffset)
-                  delRange.setEnd(node, node.textContent.length)
-                } else if(r.endContainer === node){
-                  delRange.setStart(node, 0)
-                  delRange.setEnd(node, r.endOffset)
-                } else {
-                  // elemen di tengah seleksi yang full
-                  t = node.textContent
-                  delRange = nodeRange
-                }
-                if(!t) t = delRange.cloneContents().textContent || ""
-              }catch{ continue }
-              if(!t) continue
-            }
-            // simpan cache presisi: font, kapital, paragraf, posisi
-            let style=null
-            let cacheKey=""
-            try{
-              const el = node.parentElement
-              if(el){
-                const cs = window.getComputedStyle(el)
-                const isCap = t===t.toUpperCase() && /[A-Z]/.test(t)
-                style = { fontFamily: cs.fontFamily, fontWeight: cs.fontWeight, fontStyle: cs.fontStyle, color: cs.color, letterSpacing: cs.letterSpacing, fontSize: cs.fontSize, isCap }
-                const para = el.closest('p, h1, h2, h3, blockquote, li, span, div')
-                const paraId = para ? (para.textContent||"").slice(0,20) : "root"
-                cacheKey = `${paraId}-${style.fontFamily}-${style.fontWeight}-${isCap}`
-                // simpan ke cache biar bisa cek tertukar kalau sama persis boleh, kalau beda harus balik persis
-                if(!cache.has(cacheKey)) cache.set(cacheKey, [])
-                cache.get(cacheKey).push({ text: t, style })
-              }
-            }catch{}
-            const save = delRange.cloneRange()
-            save.collapse(true)
-            const marker = document.createComment('bh')
-            try{ save.insertNode(marker) }catch{
-              try{ node.parentNode.insertBefore(marker, node) }catch{}
-            }
-            try{ delRange.deleteContents() }catch{
-              try{ node.textContent = node.textContent.replace(t, "") }catch{}
-            }
-            saved.push({ text: t, marker, style, cacheKey })
-          }
+      if(cands.length===0) return
+      cands.sort((a,b)=>a.dist-b.dist)
+      const picked = cands.slice(0, Math.min(7, cands.length))
+      const saved=[]
+      const cache=new Map()
+      for(const {node, rects} of picked){
+        const text = node.textContent
+        if(!text) continue
+        const chars = text.replace(/\s+/g, '').split('').slice(0, 18)
+        for(const ch of chars){
+          const rc = rects[Math.floor(Math.random()*rects.length)]
+          const sx = rc.left + Math.random()*rc.width
+          const sy = rc.top + rc.height*0.5 + (Math.random()-0.5)*4
+          const ang0 = Math.atan2(mouseY - sy, mouseX - sx)
+          const speed = 78 + Math.random()*34
+          selectDust.push({ ch, x: sx, y: sy, vx: Math.cos(ang0)*speed + (Math.random()-0.5)*12, vy: Math.sin(ang0)*speed + (Math.random()-0.5)*12, size: 14 + Math.random()*6, a: 1, life: 1, spin: (Math.random()-0.5)*0.28, rot: Math.random()*Math.PI*2 })
         }
-        sel.removeAllRanges()
-      }catch{}
-      // boost BH — fallback ke tengah layar kalau BH belum gerak
-      if(!hasMoved){ mouseX=w/2; mouseY=h/2; hasMoved=true }
-      massTarget = 3.0; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
-      // muncul lagi kayak diketik — cepet + ikut animasi scroll normal (fix: pakai marker, bukan Range detached)
+        if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
+        const nodeRange = document.createRange()
+        nodeRange.selectNodeContents(node)
+        let style=null, cacheKey=""
+        try{
+          const el=node.parentElement
+          if(el){
+            const cs=window.getComputedStyle(el)
+            const isCap=text===text.toUpperCase() && /[A-Z]/.test(text)
+            style={ fontFamily:cs.fontFamily, fontWeight:cs.fontWeight, fontStyle:cs.fontStyle, color:cs.color, letterSpacing:cs.letterSpacing, fontSize:cs.fontSize, isCap }
+            const para=el.closest('p, h1, h2, h3, blockquote, li, span, div')
+            const paraId=para ? (para.textContent||"").slice(0,20) : "root"
+            cacheKey=`${paraId}-${style.fontFamily}-${style.fontWeight}-${isCap}`
+            if(!cache.has(cacheKey)) cache.set(cacheKey, [])
+            cache.get(cacheKey).push({text, style})
+          }
+        }catch{}
+        const save=nodeRange.cloneRange()
+        save.collapse(true)
+        const marker=document.createComment('bh')
+        try{ save.insertNode(marker) }catch{ try{ node.parentNode.insertBefore(marker, node) }catch{} }
+        try{ nodeRange.deleteContents() }catch{}
+        saved.push({ text, marker, style, cacheKey })
+      }
       if(saved.length){
-        const doType = ()=>{
-          for(const { text, marker, style } of saved){
+        const doType=()=>{
+          for(const {text, marker, style} of saved){
             try{
               if(!marker.parentNode) continue
-              const span = document.createElement('span')
-              span.className = 'stagger'
+              const span=document.createElement('span')
+              span.className='stagger'
               span.style.borderLeft='1.5px solid rgba(198,94,46,0.85)'
               span.style.paddingLeft='1px'
               span.style.transitionDelay='0ms'
               span.style.whiteSpace='pre-wrap'
               span.style.wordBreak='break-word'
               if(style){
-                if(style.fontFamily) span.style.fontFamily = style.fontFamily
-                if(style.fontWeight) span.style.fontWeight = style.fontWeight
-                if(style.fontStyle) span.style.fontStyle = style.fontStyle
-                if(style.color) span.style.color = style.color
-                if(style.letterSpacing) span.style.letterSpacing = style.letterSpacing
-                if(style.fontSize) span.style.fontSize = style.fontSize
+                if(style.fontFamily) span.style.fontFamily=style.fontFamily
+                if(style.fontWeight) span.style.fontWeight=style.fontWeight
+                if(style.fontStyle) span.style.fontStyle=style.fontStyle
+                if(style.color) span.style.color=style.color
+                if(style.letterSpacing) span.style.letterSpacing=style.letterSpacing
+                if(style.fontSize) span.style.fontSize=style.fontSize
               }
-              const sec = marker.parentElement?.closest('.section')
-              const isIn = sec?.classList.contains('in')
+              const sec=marker.parentElement?.closest('.section')
+              const isIn=sec?.classList.contains('in')
               if(isIn) span.style.opacity='1'
-              // insert sebelum marker, lalu hapus marker
               marker.parentNode.insertBefore(span, marker)
               marker.remove()
               let idx=0
-              const chars = text.split('')
-              const type = ()=>{
+              const chars=text.split('')
+              const type=()=>{
                 if(idx < chars.length){
                   span.textContent += chars[idx++]
-                  span.style.borderLeftColor = idx%2 ? 'rgba(198,94,46,0.85)' : 'transparent'
-                  // ikut stagger normal kalau section belum .in, pakai delay kecil
-                  if(!isIn) span.style.transitionDelay = `${Math.min(idx*14, 180)}ms`
-                  // agak perlambat setelah tertelan biar realistik (sebelumnya 14-26ms, sekarang 38-58ms)
+                  span.style.borderLeftColor= idx%2 ? 'rgba(198,94,46,0.85)' : 'transparent'
+                  if(!isIn) span.style.transitionDelay=`${Math.min(idx*14, 180)}ms`
                   setTimeout(type, 38 + Math.random()*20)
                 } else {
                   span.style.borderLeft='none'
@@ -246,34 +188,25 @@ export default function AstroField() {
             }catch{}
           }
         }
-        // jika user lagi scroll kebawah, tunda sampai section masuk viewport biar ngikut animasi load normal (pakai marker)
-        const needScroll = saved.some(({ marker })=>{
-          const el = marker.parentElement?.closest('.section')
-          return el && !el.classList.contains('in')
-        })
+        const needScroll=saved.some(({marker})=>{ const el=marker.parentElement?.closest('.section'); return el && !el.classList.contains('in') })
         if(needScroll){
           let tries=0
-          const waitScroll = setInterval(()=>{
+          const waitScroll=setInterval(()=>{
             tries++
-            const ready = saved.every(({ marker })=>{
-              const el = marker.parentElement?.closest('.section')
-              return !el || el.classList.contains('in')
-            })
-            if(ready || tries>40){
-              clearInterval(waitScroll)
-              doType()
-            }
-          }, 80)
+            const ready=saved.every(({marker})=>{ const el=marker.parentElement?.closest('.section'); return !el || el.classList.contains('in') })
+            if(ready || tries>40){ clearInterval(waitScroll); doType() }
+          },80)
           setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 900)
-        } else {
-          // jeda sejenak setelah tertelan biar realistik (sebelumnya 420ms → 620ms)
-          setTimeout(doType, 620)
-        }
+        } else { setTimeout(doType, 620) }
       }
+    }
+    const onUp = () => {
+      mouseDown=false; massTarget=1
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
     window.addEventListener('mouseup', onUp)
+    window.addEventListener('contextmenu', onRightClick)
     window.addEventListener('touchmove', (e)=>{ if(e.touches[0]) onMove(e.touches[0]) }, {passive:true})
     window.addEventListener('touchstart', onDown, {passive:true})
     window.addEventListener('touchend', onUp)
@@ -719,7 +652,7 @@ export default function AstroField() {
     const step=(now)=>{draw(now); raf=requestAnimationFrame(step)}
     resize(); draw(0); if(!reduce) raf=requestAnimationFrame(step)
     window.addEventListener('resize', resize)
-    return ()=>{cancelAnimationFrame(raf); window.removeEventListener('resize',resize); window.removeEventListener('mousemove',onMove); window.removeEventListener('mousedown',onDown); window.removeEventListener('mouseup',onUp); window.removeEventListener('touchmove',onMove); window.removeEventListener('touchstart',onDown); window.removeEventListener('touchend',onUp); window.removeEventListener('click',onClick)}
+    return ()=>{cancelAnimationFrame(raf); window.removeEventListener('resize',resize); window.removeEventListener('mousemove',onMove); window.removeEventListener('mousedown',onDown); window.removeEventListener('mouseup',onUp); window.removeEventListener('contextmenu',onRightClick); window.removeEventListener('touchmove',onMove); window.removeEventListener('touchstart',onDown); window.removeEventListener('touchend',onUp); window.removeEventListener('click',onClick)}
   },[])
   return <canvas id="axis-field" ref={ref} aria-hidden="true" />
 }
