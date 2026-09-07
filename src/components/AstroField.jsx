@@ -117,73 +117,19 @@ export default function AstroField() {
       try{
         for(let i=sel.rangeCount-1;i>=0;i--){
           const r = sel.getRangeAt(i)
-          // kumpulkan text nodes biar tiap potongan balik ke tempat asalnya (bukan numpuk 1 titik)
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-            acceptNode: (node) => {
-              if(!r.intersectsNode(node)) return NodeFilter.FILTER_REJECT
-              if(node.parentElement?.closest('#axis-field, .hero-orbit, canvas, svg')) return NodeFilter.FILTER_REJECT
-              if(!node.textContent || node.textContent.length===0) return NodeFilter.FILTER_REJECT
-              return NodeFilter.FILTER_ACCEPT
-            }
-          })
-          const nodes=[]
-          let n
-          while(n = walker.nextNode()) nodes.push(n)
-          if(nodes.length===0) continue
-          // proses dari belakang biar marker gak geser
-          for(let k=nodes.length-1;k>=0;k--){
-            const node = nodes[k]
-            const nodeRange = document.createRange()
-            nodeRange.selectNodeContents(node)
-            let t=""
-            let delRange=null
-            const sBefore = r.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0
-            const eAfter = r.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0
-            if(sBefore && eAfter){
-              t = node.textContent
-              delRange = nodeRange
-            } else {
-              delRange = document.createRange()
-              try{
-                if(r.startContainer === node && r.endContainer === node){
-                  delRange.setStart(node, r.startOffset)
-                  delRange.setEnd(node, r.endOffset)
-                } else if(r.startContainer === node){
-                  delRange.setStart(node, r.startOffset)
-                  delRange.setEnd(node, node.textContent.length)
-                } else if(r.endContainer === node){
-                  delRange.setStart(node, 0)
-                  delRange.setEnd(node, r.endOffset)
-                } else {
-                  delRange = nodeRange
-                }
-                t = delRange.cloneContents().textContent || ""
-              }catch{ continue }
-              if(!t) continue
-            }
-            // simpan style asli biar font gak jadi sama
-            let style=null
-            try{
-              const refEl = node.parentElement
-              if(refEl){
-                const cs = window.getComputedStyle(refEl)
-                style = { fontFamily: cs.fontFamily, fontWeight: cs.fontWeight, fontStyle: cs.fontStyle, color: cs.color, letterSpacing: cs.letterSpacing, fontSize: cs.fontSize }
-              }
-              if(t.match(/[A-Z]/) && node.parentElement?.querySelector && node.parentElement.querySelector('b, strong')) {
-                // keep bold if parent has it
-              }
-            }catch{}
-            const save = delRange.cloneRange()
-            save.collapse(true)
-            const marker = document.createComment('bh')
-            try{ save.insertNode(marker) }catch{
-              try{ node.parentNode.insertBefore(marker, node) }catch{}
-            }
-            try{ delRange.deleteContents() }catch{
-              try{ node.textContent = node.textContent.replace(t, "") }catch{}
-            }
-            saved.push({ text: t, marker, style })
+          const frag = r.cloneContents()
+          const t = frag.textContent || ''
+          if(t.length===0) continue
+          // simpan range collapsed untuk insert marker setelah delete
+          const save = r.cloneRange()
+          try{ r.deleteContents() }catch{}
+          const marker = document.createComment('bh')
+          try{ save.collapse(true); save.insertNode(marker) }catch{
+            // fallback: append ke body kalau gagal
+            try{ document.body.appendChild(marker) }catch{}
           }
+          // simpan text asli (jangan trim, biar spasi tidak hilang)
+          saved.push({ text: t, marker })
         }
         sel.removeAllRanges()
       }catch{}
@@ -193,7 +139,7 @@ export default function AstroField() {
       // muncul lagi kayak diketik — cepet + ikut animasi scroll normal (fix: pakai marker, bukan Range detached)
       if(saved.length){
         const doType = ()=>{
-          for(const { text, marker, style } of saved){
+          for(const { text, marker } of saved){
             try{
               if(!marker.parentNode) continue
               const span = document.createElement('span')
@@ -203,14 +149,6 @@ export default function AstroField() {
               span.style.transitionDelay='0ms'
               span.style.whiteSpace='pre-wrap'
               span.style.wordBreak='break-word'
-              if(style){
-                if(style.fontFamily) span.style.fontFamily = style.fontFamily
-                if(style.fontWeight) span.style.fontWeight = style.fontWeight
-                if(style.fontStyle) span.style.fontStyle = style.fontStyle
-                if(style.color) span.style.color = style.color
-                if(style.letterSpacing) span.style.letterSpacing = style.letterSpacing
-                if(style.fontSize) span.style.fontSize = style.fontSize
-              }
               const sec = marker.parentElement?.closest('.section')
               const isIn = sec?.classList.contains('in')
               if(isIn) span.style.opacity='1'
