@@ -110,73 +110,26 @@ export default function AstroField() {
         })
       }
       if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
-      // BENERAN HAPUS huruf asli — OPSI 2: hanya hapus text node, biar canvas/SVG black hole gak ikut kehapus
+      // BENERAN HAPUS huruf asli — FIX bug: marker jangan di-insert sebelum delete (kehapus), insert setelah delete
       const saved = []
       const bhX0 = hasMoved ? mouseX : w/2
       const bhY0 = hasMoved ? mouseY : h/2
       try{
         for(let i=sel.rangeCount-1;i>=0;i--){
           const r = sel.getRangeAt(i)
-          // kumpulkan text nodes yang intersect range
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-            acceptNode: (node) => {
-              if(!r.intersectsNode(node)) return NodeFilter.FILTER_REJECT
-              if(node.parentElement?.closest('#axis-field, .hero-orbit, canvas, svg')) return NodeFilter.FILTER_REJECT
-              return NodeFilter.FILTER_ACCEPT
-            }
-          })
-          const nodes=[]
-          let n
-          while(n = walker.nextNode()) nodes.push(n)
-          if(nodes.length===0) continue
-          // proses dari belakang biar marker gak geser
-          for(let k=nodes.length-1;k>=0;k--){
-            const node = nodes[k]
-            const nodeRange = document.createRange()
-            nodeRange.selectNodeContents(node)
-            // hitung irisan dengan selection range
-            const sBefore = r.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0
-            const eAfter = r.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0
-            let t=""
-            let delRange=null
-            if(sBefore && eAfter){
-              // full contain
-              t = node.textContent
-              delRange = nodeRange
-            } else {
-              // partial — hanya handle kalau start/end di text node yang sama (kasus umum)
-              delRange = document.createRange()
-              try{
-                if(r.startContainer === node && r.endContainer === node){
-                  delRange.setStart(node, r.startOffset)
-                  delRange.setEnd(node, r.endOffset)
-                } else if(r.startContainer === node){
-                  delRange.setStart(node, r.startOffset)
-                  delRange.setEnd(node, node.textContent.length)
-                } else if(r.endContainer === node){
-                  delRange.setStart(node, 0)
-                  delRange.setEnd(node, r.endOffset)
-                } else {
-                  // fallback: anggap full (node di tengah seleksi)
-                  delRange = nodeRange
-                }
-                t = delRange.cloneContents().textContent || ""
-              }catch{ continue }
-              if(!t) continue
-            }
-            const save = delRange.cloneRange()
-            save.collapse(true)
-            const marker = document.createComment('bh')
-            try{ save.insertNode(marker) }catch{
-              try{ node.parentNode.insertBefore(marker, node) }catch{}
-            }
-            try{ delRange.deleteContents() }catch{
-              // fallback: kosongkan manual jika delete gagal
-              try{ node.textContent = node.textContent.replace(t, "") }catch{}
-            }
-            // kalau node jadi kosong & bukan partial, biarkan (marker sudah ada)
-            saved.push({ text: t, marker })
+          const frag = r.cloneContents()
+          const t = frag.textContent || ''
+          if(t.length===0) continue
+          // simpan range collapsed untuk insert marker setelah delete
+          const save = r.cloneRange()
+          try{ r.deleteContents() }catch{}
+          const marker = document.createComment('bh')
+          try{ save.collapse(true); save.insertNode(marker) }catch{
+            // fallback: append ke body kalau gagal
+            try{ document.body.appendChild(marker) }catch{}
           }
+          // simpan text asli (jangan trim, biar spasi tidak hilang)
+          saved.push({ text: t, marker })
         }
         sel.removeAllRanges()
       }catch{}
@@ -210,7 +163,6 @@ export default function AstroField() {
                   span.style.borderLeftColor = idx%2 ? 'rgba(198,94,46,0.85)' : 'transparent'
                   // ikut stagger normal kalau section belum .in, pakai delay kecil
                   if(!isIn) span.style.transitionDelay = `${Math.min(idx*14, 180)}ms`
-                  // balikin cepet 10 detik setelah kehisap
                   setTimeout(type, 14 + Math.random()*12)
                 } else {
                   span.style.borderLeft='none'
@@ -241,10 +193,9 @@ export default function AstroField() {
               doType()
             }
           }, 80)
-          setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 10000)
+          setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 900)
         } else {
-          // 10 detik setelah kehisap baru mulai ngetik cepet
-          setTimeout(doType, 10000)
+          setTimeout(doType, 420)
         }
       }
     }
