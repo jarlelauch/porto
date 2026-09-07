@@ -110,9 +110,8 @@ export default function AstroField() {
         })
       }
       if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
-      // BENERAN HAPUS huruf asli dari DOM — bug kemarin range jadi detached setelah deleteContents
+      // BENERAN HAPUS huruf asli — FIX bug: marker jangan di-insert sebelum delete (kehapus), insert setelah delete
       const saved = []
-      // simpan host untuk reinsert yang robust (tidak pakai Range setelah delete)
       const bhX0 = hasMoved ? mouseX : w/2
       const bhY0 = hasMoved ? mouseY : h/2
       try{
@@ -120,17 +119,17 @@ export default function AstroField() {
           const r = sel.getRangeAt(i)
           const frag = r.cloneContents()
           const t = frag.textContent || ''
-          if(t.trim().length===0) continue
-          // host = elemen terdekat yang masih ada setelah delete (section / p / div)
-          let host = r.commonAncestorContainer
-          if(host.nodeType===3) host = host.parentElement
-          if(!host || host===document.body) host = document.querySelector('.section') || document.body
-          // simpan posisi: parent + nextSibling sebelum delete biar insert tidak detached
-          const marker = document.createComment('bh')
-          try{ r.insertNode(marker) }catch{}
-          saved.push({ text: t, marker, host })
+          if(t.length===0) continue
+          // simpan range collapsed untuk insert marker setelah delete
+          const save = r.cloneRange()
           try{ r.deleteContents() }catch{}
-          // marker tetap di DOM sebagai anchor untuk reinsert
+          const marker = document.createComment('bh')
+          try{ save.collapse(true); save.insertNode(marker) }catch{
+            // fallback: append ke body kalau gagal
+            try{ document.body.appendChild(marker) }catch{}
+          }
+          // simpan text asli (jangan trim, biar spasi tidak hilang)
+          saved.push({ text: t, marker })
         }
         sel.removeAllRanges()
       }catch{}
@@ -148,6 +147,8 @@ export default function AstroField() {
               span.style.borderLeft='1.5px solid rgba(198,94,46,0.85)'
               span.style.paddingLeft='1px'
               span.style.transitionDelay='0ms'
+              span.style.whiteSpace='pre-wrap'
+              span.style.wordBreak='break-word'
               const sec = marker.parentElement?.closest('.section')
               const isIn = sec?.classList.contains('in')
               if(isIn) span.style.opacity='1'
