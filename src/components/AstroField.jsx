@@ -19,6 +19,8 @@ const ORBITS = [
   { rx: 310, ry: 210, ecc: 0.08, tilt: 0.08,  period: 56000, color: 'rgba(233,223,201,0.05)', dot: 'rgba(233,223,201,0.42)', r: 1.3 },
 ]
 
+const GLYPH_SET = ['e','π','φ','Σ','∫','∞','λ','ψ','Ω','Δ','α','β','∑','∏','∂','∇','∈','√','±','≈','≠','0','1','2','9']
+
 function solveKepler(M, e) { let E = M; for(let i=0;i<4;i++) E = E - (E - e*Math.sin(E)-M)/(1 - e*Math.cos(E)); return E }
 
 export default function AstroField() {
@@ -38,6 +40,15 @@ export default function AstroField() {
       return { nx:Math.random(), ny:Math.random(), r:0.52+Math.random()*1.15, phase:Math.random()*Math.PI*2, speed:0.45+Math.random()*1.7, base:0.28+Math.random()*0.62, col, twA:0.16+Math.random()*0.26 }
     })
     const dust = Array.from({length: 48}, () => ({ nx:Math.random(), ny:Math.random(), r:0.6+Math.random()*1.0, drift:0.04+Math.random()*0.09, phase:Math.random()*Math.PI*2 }))
+    // glyphs that can be sucked by BH — huruf/angka melayang
+    const glyphs = Array.from({length: 30}, () => ({
+      x: Math.random(), y: Math.random(),
+      ch: GLYPH_SET[Math.floor(Math.random()*GLYPH_SET.length)],
+      size: 10 + Math.random()*7,
+      baseA: 0.18 + Math.random()*0.22,
+      drift: (Math.random()-0.5)*0.04,
+      phase: Math.random()*Math.PI*2,
+    }))
 
     let mx=0,my=0,tx=0,ty=0
     let mouseX = -9999, mouseY = -9999
@@ -52,7 +63,7 @@ export default function AstroField() {
       const cx=(e.clientX/w-0.5)*2, cy=(e.clientY/h-0.5)*2
       tx=cx*12; ty=cy*10
     }
-    const onDown = () => { mouseDown=true; massTarget=3.2 }
+    const onDown = () => { mouseDown=true; massTarget=2.2 }
     const onUp = () => { mouseDown=false; massTarget=1 }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
@@ -64,8 +75,7 @@ export default function AstroField() {
     const novas=[]
     const onClick = (e) => {
       if(reduce) return
-      // nova at click, not at BH if clicking BH would be swallowed
-      const isBH = Math.hypot(e.clientX - mouseX, e.clientY - mouseY) < 28
+      const isBH = Math.hypot(e.clientX - mouseX, e.clientY - mouseY) < 22
       if(isBH) return
       novas.push({x:e.clientX, y:e.clientY, t0:performance.now(), dur:1400})
       if(novas.length>6) novas.shift()
@@ -93,10 +103,9 @@ export default function AstroField() {
         for(let y=0;y<=h;y+=12){
           const dx=x-cx0, dy=y-cy0, dist=Math.sqrt(dx*dx+dy*dy)
           let bend=20*Math.exp(-dist/260)*(dx/(Math.abs(dx)+160))
-          // bh lensing
           if(!reduce && hasMoved){
             const bdx=x-bhX, bdy=y-bhY, bd=Math.hypot(bdx,bdy)
-            bend += bhMass*22*Math.exp(-bd/88)*(bdx/(Math.abs(bdx)+42))*(1-bd/260)
+            bend += bhMass*14*Math.exp(-bd/96)*(bdx/(Math.abs(bdx)+42))*(1-bd/260)
           }
           ctx.lineTo(x + bend*(1-Math.abs(dy)/h*0.28), y)
         }
@@ -110,7 +119,7 @@ export default function AstroField() {
           let bend=20*Math.exp(-dist/260)*(dy/(Math.abs(dy)+160))
           if(!reduce && hasMoved){
             const bdx=x-bhX, bdy=y-bhY, bd=Math.hypot(bdx,bdy)
-            bend += bhMass*22*Math.exp(-bd/88)*(bdy/(Math.abs(bdy)+42))*(1-bd/260)
+            bend += bhMass*14*Math.exp(-bd/96)*(bdy/(Math.abs(bdy)+42))*(1-bd/260)
           }
           ctx.lineTo(x, y + bend*(1-Math.abs(dx)/w*0.28))
         }
@@ -128,48 +137,39 @@ export default function AstroField() {
       grad.addColorStop(0,'rgba(233,223,201,0.11)'); grad.addColorStop(0.28,'rgba(201,173,120,0.06)'); grad.addColorStop(0.62,'rgba(111,143,127,0.03)'); grad.addColorStop(1,'rgba(0,0,0,0)')
       ctx.fillStyle=grad; ctx.beginPath(); ctx.ellipse(0,0,w*0.74,h*0.12,0,0,Math.PI*2); ctx.fill()
       ctx.strokeStyle='rgba(18,16,12,0.28)'; ctx.lineWidth=h*0.019; ctx.beginPath(); ctx.ellipse(0,0,w*0.7,h*0.048,0,0,Math.PI*2); ctx.stroke()
-      // subtle star-forming knots
       ctx.fillStyle='rgba(233,223,201,0.035)'; ctx.beginPath(); ctx.ellipse(w*0.18, -h*0.012, w*0.04, h*0.02, 0,0,Math.PI*2); ctx.fill()
       ctx.beginPath(); ctx.ellipse(-w*0.12, h*0.01, w*0.03, h*0.015, 0,0,Math.PI*2); ctx.fill()
       ctx.restore()
     }
 
     const drawBlackHole=(bx,by,m)=>{
-      // mass 1..3.2 controls radius and glow
-      const R = 18 + m*4.2 // photon ring radius
-      const inner = 10 + m*1.8
-      // outer lensing halo
-      const grad = ctx.createRadialGradient(bx,by, inner, bx,by, R*3.2)
+      // minimal — kecil, tidak dominan
+      const R = 11 + m*2.6
+      const inner = 7 + m*1.2
+      // outer faint halo — sangat tipis
+      const grad = ctx.createRadialGradient(bx,by, inner, bx,by, R*2.4)
       grad.addColorStop(0,'rgba(0,0,0,0)')
-      grad.addColorStop(0.52,'rgba(201,173,120,0.06)')
-      grad.addColorStop(0.72,'rgba(111,143,127,0.04)')
+      grad.addColorStop(0.58,'rgba(201,173,120,0.04)')
       grad.addColorStop(1,'rgba(0,0,0,0)')
-      ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(bx,by,R*3.2,0,Math.PI*2); ctx.fill()
-      // accretion disk — tilted ellipse behind
+      ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(bx,by,R*2.4,0,Math.PI*2); ctx.fill()
+      // accretion disk — minimal tipis
       ctx.save(); ctx.translate(bx,by); ctx.rotate(-0.18)
-      ctx.fillStyle=`rgba(198,94,46,${0.10 + m*0.02})`; ctx.strokeStyle=`rgba(198,94,46,${0.18 + m*0.03})`; ctx.lineWidth=0.9
-      ctx.beginPath(); ctx.ellipse(0, 2.2, R*1.55, R*0.48, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke()
-      // back half dashed (eclipsed)
-      ctx.setLineDash([2,4]); ctx.strokeStyle='rgba(201,173,120,0.18)'; ctx.lineWidth=0.6
-      ctx.beginPath(); ctx.ellipse(0, 2.2, R*1.55, R*0.48, 0, Math.PI, Math.PI*2); ctx.stroke(); ctx.setLineDash([])
+      ctx.fillStyle=`rgba(198,94,46,${0.06 + m*0.015})`; ctx.strokeStyle=`rgba(201,173,120,${0.10 + m*0.02})`; ctx.lineWidth=0.7
+      ctx.beginPath(); ctx.ellipse(0, 1.6, R*1.25, R*0.36, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke()
+      ctx.setLineDash([2,4]); ctx.strokeStyle='rgba(201,173,120,0.13)'; ctx.lineWidth=0.5
+      ctx.beginPath(); ctx.ellipse(0, 1.6, R*1.25, R*0.36, 0, Math.PI, Math.PI*2); ctx.stroke(); ctx.setLineDash([])
       ctx.restore()
-      // photon ring
-      ctx.strokeStyle = mouseDown ? 'rgba(233,223,201,0.42)' : 'rgba(233,223,201,0.22)'; ctx.lineWidth = mouseDown ? 1.4 : 1.0
+      // photon ring — tipis, minimalis
+      ctx.strokeStyle = mouseDown ? 'rgba(233,223,201,0.34)' : 'rgba(233,223,201,0.18)'; ctx.lineWidth = mouseDown ? 1.0 : 0.8
       ctx.beginPath(); ctx.arc(bx,by,R,0,Math.PI*2); ctx.stroke()
-      ctx.strokeStyle='rgba(198,94,46,0.22)'; ctx.lineWidth=0.6; ctx.beginPath(); ctx.arc(bx,by,R+3.2, -0.28*Math.PI, 0.28*Math.PI); ctx.stroke()
       // shadow
-      ctx.fillStyle='rgba(6,5,4,0.98)'; ctx.beginPath(); ctx.arc(bx,by,inner,0,Math.PI*2); ctx.fill()
-      ctx.strokeStyle='rgba(233,223,201,0.08)'; ctx.lineWidth=0.7; ctx.beginPath(); ctx.arc(bx,by,inner,0,Math.PI*2); ctx.stroke()
-      // hawking core
-      ctx.fillStyle='rgba(198,94,46,0.95)'; ctx.beginPath(); ctx.arc(bx,by,1.6,0,Math.PI*2); ctx.fill()
-      // crosshair when held
-      if(mouseDown){
-        ctx.strokeStyle='rgba(233,223,201,0.14)'; ctx.lineWidth=0.6
-        ctx.beginPath(); ctx.moveTo(bx-R*1.9,by); ctx.lineTo(bx+R*1.9,by); ctx.moveTo(bx,by-R*1.9); ctx.lineTo(bx,by+R*1.9); ctx.stroke()
-      }
-      // label
-      ctx.fillStyle='rgba(201,173,120,0.38)'; ctx.font='7px ui-monospace, monospace'; ctx.textAlign='center'
-      ctx.fillText(mouseDown ? 'BH · mass ×3.2 — hold to suck' : 'BH · move · hold click to amplify', bx, by + R + 12)
+      ctx.fillStyle='rgba(8,7,6,0.98)'; ctx.beginPath(); ctx.arc(bx,by,inner,0,Math.PI*2); ctx.fill()
+      ctx.strokeStyle='rgba(233,223,201,0.07)'; ctx.lineWidth=0.6; ctx.beginPath(); ctx.arc(bx,by,inner,0,Math.PI*2); ctx.stroke()
+      // core dot — sangat kecil
+      ctx.fillStyle='rgba(198,94,46,0.88)'; ctx.beginPath(); ctx.arc(bx,by,1.1,0,Math.PI*2); ctx.fill()
+      // minimal label
+      ctx.fillStyle='rgba(201,173,120,0.32)'; ctx.font='6px ui-monospace, monospace'; ctx.textAlign='center'
+      ctx.fillText(mouseDown ? '◉ ×2.2' : '◉', bx, by + R + 9)
       ctx.textAlign='left'
     }
 
@@ -191,33 +191,99 @@ export default function AstroField() {
       ctx.stroke()
       ctx.fillStyle='rgba(201,173,120,0.28)'; ctx.font='9px ui-monospace, monospace'; ctx.fillText('0,0',cx0+7,cy0-7)
 
-      // stars with lensing toward BH
+      // glyphs — huruf/angka yang bisa kesedot BH
+      for(const g of glyphs){
+        // drift slowly
+        g.x += g.drift*0.12
+        g.y += Math.sin(now*0.0003+g.phase)*0.02
+        if(g.x<0) g.x=1; if(g.x>1) g.x=0
+        if(g.y<0) g.y=1; if(g.y>1) g.y=0
+        let px = g.x*w + mx*0.06
+        let py = g.y*h + my*0.06
+        let scale = 1
+        let alpha = g.baseA + 0.08*Math.sin(now*0.0012+g.phase)
+        // BH suction
+        if(!reduce && hasMoved){
+          const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
+          const horizon = 11+mass*2.6
+          if(d < 140){
+            const pull = mass * 1.9 * Math.exp(-d/46) // stronger when closer
+            // spaghettification: stretch toward BH
+            const ang = Math.atan2(dy,dx)
+            // move glyph toward BH
+            g.x += (dx/w)*0.0025*mass
+            g.y += (dy/h)*0.0025*mass
+            // scale down as sucked
+            if(d < 44){
+              scale = Math.max(0.18, d/44)
+              alpha *= scale
+            }
+            // draw stretched trail when very close
+            if(d < 64 && d > horizon){
+              ctx.strokeStyle=`rgba(201,173,120,${alpha*0.22})`
+              ctx.lineWidth=0.7
+              ctx.beginPath()
+              ctx.moveTo(px,py)
+              ctx.lineTo(px + Math.cos(ang)* (64-d)*0.32, py + Math.sin(ang)* (64-d)*0.32)
+              ctx.stroke()
+            }
+            // if swallowed, respawn far
+            if(d < horizon+2){
+              alpha = 0
+              // respawn at random edge far from BH
+              g.x = Math.random(); g.y = Math.random()
+              // ensure not too close to BH
+              if(Math.hypot(g.x*w - bhX, g.y*h - bhY) < 180){ g.x = (g.x+0.5)%1 }
+            }
+          }
+        }
+        if(alpha < 0.04) continue
+        ctx.save()
+        ctx.translate(px,py)
+        // slight rotation toward BH when close
+        if(!reduce && hasMoved){
+          const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
+          if(d<90){
+            const ang=Math.atan2(dy,dx)
+            ctx.rotate(ang*0.18)
+          }
+        }
+        ctx.scale(scale, scale)
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha))
+        ctx.fillStyle = d3lq(g.ch)
+        ctx.font = `${g.size}px ui-monospace, monospace`
+        ctx.textAlign='center'; ctx.textBaseline='middle'
+        ctx.fillText(g.ch, 0, 0)
+        ctx.restore()
+      }
+      function d3lq(ch){
+        // color by type
+        if(/[0-9]/.test(ch)) return 'rgba(201,173,120,0.62)'
+        if(/[πφΣ∫∞λψΩΔαβ]/.test(ch)) return 'rgba(198,94,46,0.55)'
+        return 'rgba(233,223,201,0.58)'
+      }
+
+      // stars with lensing toward BH — more subtle now
       for(const s of stars){
         let x=s.nx*w, y=s.ny*h
         const dCenter=Math.hypot(x-cx0,y-cy0); if(dCenter<32) continue
         const tw=reduce?1:0.76 + s.twA*Math.sin(now*0.001*s.speed + s.phase) + 0.08*Math.cos(now*0.00037*s.speed*1.7)
         let a=Math.max(0,Math.min(1,s.base*tw))
         let px=x + mx*(0.12+s.r*0.07), py=y + my*(0.12+s.r*0.07)
-        // BH lensing
         if(!reduce && hasMoved){
           const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
-          if(d<260){
-            // outside event horizon — lensed outward (Einstein ring) + slight pull
-            const horizon=18+mass*4.2
+          if(d<220){
+            const horizon=11+mass*2.6
             if(d < horizon+1.2){
-              a *= 0.08 // swallowed
-              // suck inward faster
-              px += dx * 0.04 * mass
-              py += dy * 0.04 * mass
+              a *= 0.06
+              px += dx * 0.03 * mass
+              py += dy * 0.03 * mass
             } else {
-              // lens displacement: Einstein angle ~ mass* 260 / d
-              const lens = mass * 18 * Math.exp(-d/110) // px
+              const lens = mass * 10 * Math.exp(-d/118)
               const ang = Math.atan2(dy,dx)
-              // push perpendicular for ring-like effect, plus slight inward
-              px += Math.cos(ang)* lens * 0.55
-              py += Math.sin(ang)* lens * 0.55
-              // brighten near ring
-              if(d < horizon*2.2) a = Math.min(1, a*1.35 + 0.18)
+              px += Math.cos(ang)* lens * 0.45
+              py += Math.sin(ang)* lens * 0.45
+              if(d < horizon*2.1) a = Math.min(1, a*1.22 + 0.12)
             }
           }
         }
@@ -237,10 +303,9 @@ export default function AstroField() {
           const driftX=Math.sin(now*0.00006*(1+d.drift)+d.phase)*11 + mx*0.32
           const driftY=Math.cos(now*0.00005*(1+d.drift*0.72)+d.phase)*7 + my*0.32
           let x=d.nx*w+driftX, y=d.ny*h+driftY
-          // dust also sucked slowly
           if(hasMoved){
             const dx=bhX-x, dy=bhY-y, dist=Math.hypot(dx,dy)
-            if(dist<180){ x+=dx*0.004*mass; y+=dy*0.004*mass }
+            if(dist<160){ x+=dx*0.003*mass; y+=dy*0.003*mass }
           }
           const a=0.13+0.08*Math.sin(now*0.0008+d.phase)
           ctx.fillStyle=`rgba(201,173,120,${a})`; ctx.beginPath(); ctx.arc(x,y,d.r,0,Math.PI*2); ctx.fill()
@@ -253,12 +318,11 @@ export default function AstroField() {
         const distMouse=Math.hypot(mouseX-ax, mouseY-ay)
         const hover=Math.max(0,1-distMouse/170)
         const isHover=hover>0.09
-        // BH distorts constellation slightly
         let lensedPts=pts
         if(!reduce && hasMoved){
           lensedPts=pts.map(([x,y])=>{
             const dx=bhX-x, dy=bhY-y, d=Math.hypot(dx,dy)
-            if(d<140){ const f=mass*6*Math.exp(-d/72); return [x+dx/d*f, y+dy/d*f] }
+            if(d<120){ const f=mass*4.2*Math.exp(-d/68); return [x+dx/d*f, y+dy/d*f] }
             return [x,y]
           })
         }
@@ -326,12 +390,10 @@ export default function AstroField() {
         for(let i=shootings.length-1;i>=0;i--){const s=shootings[i]; const p=(now-s.t0)/s.dur; if(p>=1){shootings.splice(i,1); continue} const x=s.x0+s.vx*p, y=s.y0+s.vy*p+200*p*p, alpha=p<0.10?p/0.10:1-(p-0.10)/0.90, trail=22; const grad=ctx.createLinearGradient(x-s.vx*0.022*trail, y-s.vy*0.022*trail, x,y); grad.addColorStop(0,'rgba(233,223,201,0)'); grad.addColorStop(0.5,`rgba(201,173,120,${alpha*0.42})`); grad.addColorStop(1,`rgba(255,255,255,${alpha*0.98})`); ctx.strokeStyle=grad; ctx.lineWidth=1.75; ctx.beginPath(); ctx.moveTo(x-s.vx*0.019*trail, y-s.vy*0.019*trail); ctx.lineTo(x,y); ctx.stroke(); ctx.fillStyle=`rgba(255,255,255,${alpha})`; ctx.beginPath(); ctx.arc(x,y,1.7,0,Math.PI*2); ctx.fill(); ctx.fillStyle=`rgba(233,223,201,${alpha*0.17})`; ctx.beginPath(); ctx.arc(x,y,5.2,0,Math.PI*2); ctx.fill()}
       }
 
-      // blackhole cursor — on top of everything except novas already drawn
       if(!reduce && hasMoved && mouseX>-9000){
         drawBlackHole(bhX,bhY,mass)
       }
 
-      // vignette
       const vig=ctx.createRadialGradient(cx0,cy0, Math.min(w,h)*0.42, cx0,cy0, Math.max(w,h)*0.78)
       vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(6,5,4,0.34)')
       ctx.fillStyle=vig; ctx.fillRect(-mx,-my,w,h)
