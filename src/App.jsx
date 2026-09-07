@@ -267,20 +267,20 @@ function App() {
             <h2 className="s-name">tentang</h2>
             <span className="s-meta">◈ konstelasi φ · Σ · ∫ terlihat di langit</span>
           </div>
-          <p>
+          <p className="stagger" style={{ transitionDelay: '80ms' }}>
             Sistem, otomasi, dan representasi visual yang presisi adalah tempat aku bekerja. Dari{' '}
             <b>profil GitHub</b> yang beranimasi penuh SVG kalkulatif, sampai <b>j-sgent</b> — sistem
             intelijen agen pribadi — aku membuat mesin yang diam-diam bekerja: elegan dari dalam ke luar.
           </p>
-            <p>
+          <p className="stagger" style={{ transitionDelay: '160ms' }}>
             Prinsipku sederhana, bila sesuatu bisa dijelaskan dalam sebaris persamaan, ia layak menjadi
             bagian dari sistem. Langit di belakangmu bukan hiasan — ia adalah <b>warp grid</b> yang
             melengkung oleh massa di pusat (lensing), <b>Milky Way</b> diagonal ultra-halus, 5 konstelasi
             yang menyala saat hover (<b>φ Σ ∫ π ∞</b>), 6 orbit Kepler eccentric dengan precession, dan
             bintang jatuh multi-trail. <b>Kursormu adalah black hole</b>: gerakkan untuk melensakan bintang & grid, <b>tahan klik</b> untuk放大 massa & menyedot debu, <b>hover</b> konstelasi, <b>klik</b> kosong untuk nova ripple.
           </p>
-          <pre className="spec">{SPEC}</pre>
-          <div className="stats">
+          <pre className="spec stagger" style={{ transitionDelay: '240ms' }}>{SPEC}</pre>
+          <div className="stats stagger" style={{ transitionDelay: '320ms' }}>
             <span>
               <b>∫</b> e<sup>iπ</sup> = −1
             </span>
@@ -300,8 +300,8 @@ function App() {
             <h2 className="s-name">keterampilan</h2>
           </div>
           <dl className="ledger">
-            {SKILLS.map((g) => (
-              <div className="led-row" key={g.cat}>
+            {SKILLS.map((g, i) => (
+              <div className="led-row stagger" key={g.cat} style={{ transitionDelay: `${80 + i * 70}ms` }}>
                 <dt>{g.cat}</dt>
                 <dd>
                   {g.items.map((it) => (
@@ -319,7 +319,7 @@ function App() {
             <h2 className="s-name">karya</h2>
           </div>
           {PROJECTS.map((p, idx) => (
-            <article className="card" key={p.title}>
+            <article className="card stagger" key={p.title} style={{ transitionDelay: `${80 + idx * 90}ms` }}>
               <span className="idx">0{idx + 1}</span>
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
@@ -349,7 +349,7 @@ function App() {
             <span className="s-meta">— bleach · kyōka suigetsu</span>
           </div>
           <div className="aizen-grid">
-            <div className="aizen-frame">
+            <div className="aizen-frame stagger" style={{ transitionDelay: '80ms' }}>
               <img
                 src="/porto/aizen.jpg"
                 alt="Aizen Sousuke — Bleach (Pinterest portrait, © Tite Kubo / Shueisha)"
@@ -359,7 +359,7 @@ function App() {
               <span>藍染 惣右介 — Aizen Sōsuke</span>
               <span className="aizen-cap">“sejak awal, tak ada yang berdiri di langit”</span>
             </div>
-            <div className="aizen-quote">
+            <div className="aizen-quote stagger" style={{ transitionDelay: '200ms' }}>
               <blockquote>
                 <p className="jp">人間は猿を模倣し、神は人間を模倣する。</p>
                 <p className="rm">Ningen wa saru o mohō shi, kami wa ningen o mohō suru.</p>
@@ -382,10 +382,10 @@ function App() {
             <span className="s-num">§05</span>
             <h2 className="s-name">kontak</h2>
           </div>
-          <p className="big">
+          <p className="big stagger" style={{ transitionDelay: '80ms' }}>
             Ada persamaan yang ingin dipecahkan <em>bersama</em>?
           </p>
-          <div className="cta">
+          <div className="cta stagger" style={{ transitionDelay: '160ms' }}>
             <a className="btn solid" href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
               github ↗
             </a>
@@ -393,7 +393,7 @@ function App() {
               profil ↗
             </a>
           </div>
-          <p className="muted">respon tercepat lewat GitHub — mulai dari isu, PR, atau pesan langsung</p>
+          <p className="muted stagger" style={{ transitionDelay: '240ms' }}>respon tercepat lewat GitHub — mulai dari isu, PR, atau pesan langsung</p>
         </section>
       </main>
 

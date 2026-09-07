@@ -509,6 +509,27 @@ html.bh-active .bh-hint { opacity: 1; }
   transform: none;
 }
 
+/* stagger — tiap child muncul satu-satu pas section masuk viewport */
+.section .stagger {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16,1,0.3,1),
+    transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.section.in .stagger {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .section .stagger {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+}
+
 @media (prefers-reduced-motion: reduce) {
   .section {
     opacity: 1;
