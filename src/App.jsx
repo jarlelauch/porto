@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import AxisField from './components/AxisField'
+import Stamp from './components/Stamp'
 
 const STRIP = [
   'e^{i\u03c0} + 1 = 0',
@@ -17,6 +18,14 @@ const SKILLS = [
   { cat: 'Bahasa', items: ['Python', 'JavaScript', 'TypeScript', 'SQL', 'C'] },
   { cat: 'Frontend', items: ['React', 'HTML', 'CSS', 'SVG animasi'] },
   { cat: 'Sistem & tool', items: ['Git', 'Vite', 'GitHub Actions', 'Scripting'] },
+  {
+    cat: 'Deployment',
+    items: ['GitHub Pages', 'gh-pages', 'strategi branch', 'cache-busting'],
+  },
+  {
+    cat: 'Animasi vektor',
+    items: ['SVG kalkulatif', 'Canvas', 'fisika lerp ringan'],
+  },
   { cat: 'Bidang', items: ['Agen LLM', 'Otomasi data', 'Desain vektor'] },
 ]
 
@@ -121,6 +130,7 @@ function App() {
 
       <main>
         <section className="hero shell">
+          <Stamp />
           <p className="eyebrow">
             <b>◈</b> orbit : membuka peluang
           </p>

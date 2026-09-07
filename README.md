@@ -7,10 +7,10 @@ Live: **https://jarlelauch.github.io/porto/**
 
 ## Bagian
 
-- **Hero** — judul `JARLE LAUCH.`, formula `e^{iπ} + 1 = 0`, koordinat, CTA
+- **Hero** — judul `JARLE LAUCH.`, formula `e^{iπ} + 1 = 0`, koordinat, CTA, stempel monogram
 - **Strip formula** — teles berjalan persamaan (Euler, Basel, Fibonacci, …)
 - **Tentang** — profil singkat + `$ whoami` dan baris presisi
-- **Keterampilan** — tabel book-keeping (variabel :: nilai)
+- **Keterampilan** — tabel book-keeping 6 kategori (variabel :: nilai) termasuk deployment & animasi vektor
 - **Karya** — katalog karya bernomor (j-sgent, github-profile-blackhole, situs ini)
 - **Demo — naga api** — embed langsung dari halaman naga interaktif (bisa dimainkan di dalam situs)
 - **Kontak** — lewat GitHub
