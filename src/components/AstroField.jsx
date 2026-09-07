@@ -24,21 +24,20 @@ const GLYPH_SET = ['e','π','φ','Σ','∫','∞','λ','ψ','Ω','Δ','α','β',
 function solveKepler(M, e) { let E = M; for(let i=0;i<4;i++) E = E - (E - e*Math.sin(E)-M)/(1 - e*Math.cos(E)); return E }
 
 export default function AstroField() {
-  const DISABLE_BH = true // matiin total sistem black hole & kursor
   const ref = useRef(null)
   useEffect(() => {
+    const DISABLE_CURSOR = true // matiin animasi kursor
+    const DISABLE_SUCK = true // matiin fungsi nyedot black hole
     const canvas = ref.current
-    if (DISABLE_BH) {
-      if(canvas) canvas.style.display='none'
+    if(DISABLE_CURSOR){
       document.documentElement.classList.remove('bh-active')
       const hint=document.querySelector('.bh-hint')
       if(hint) hint.style.display='none'
-      return
     }
     const ctx = canvas.getContext('2d')
     let raf = 0, w=0, h=0
     const dpr = Math.min(window.devicePixelRatio||1,2)
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || DISABLE_BH
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const stars = Array.from({length: 360}, () => {
       const t=Math.random(); let col='233,223,201'
@@ -71,18 +70,19 @@ export default function AstroField() {
     const onMove = (e) => {
       mouseX = e.clientX; mouseY = e.clientY
       hasMoved = true
-      document.documentElement.classList.add('bh-active')
+      if(!DISABLE_CURSOR) document.documentElement.classList.add('bh-active')
       if(reduce || w < 700) return
       const cx=(e.clientX/w-0.5)*2, cy=(e.clientY/h-0.5)*2
       tx=cx*12; ty=cy*10
     }
     const onDown = (e) => { 
+      if(DISABLE_SUCK) { mouseDown=true; return }
       if(e && e.button===2) { mouseDown=true; massTarget=3.0; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900) }
       else { mouseDown=true; massTarget=2.2 }
     }
     const onRightClick = (e) => {
       e.preventDefault()
-      if(reduce) return
+      if(reduce || DISABLE_SUCK) return
       // klik kanan = hisap (pakai horizontal band + radius, tanpa UI)
       if(!hasMoved){ mouseX=e.clientX; mouseY=e.clientY; hasMoved=true; document.documentElement.classList.add('bh-active') }
       else { mouseX=e.clientX; mouseY=e.clientY }
@@ -250,7 +250,7 @@ export default function AstroField() {
         for(let y=0;y<=h;y+=12){
           const dx=x-cx0, dy=y-cy0, dist=Math.sqrt(dx*dx+dy*dy)
           let bend=20*Math.exp(-dist/260)*(dx/(Math.abs(dx)+160))
-          if(!reduce && hasMoved){
+          if(!reduce && hasMoved && !DISABLE_SUCK){
             const bdx=x-bhX, bdy=y-bhY, bd=Math.hypot(bdx,bdy)
             bend += bhMass*12*Math.exp(-bd/96)*(bdx/(Math.abs(bdx)+42))*(1-bd/260)
           }
@@ -264,7 +264,7 @@ export default function AstroField() {
         for(let x=0;x<=w;x+=12){
           const dx=x-cx0, dy=y-cy0, dist=Math.sqrt(dx*dx+dy*dy)
           let bend=20*Math.exp(-dist/260)*(dy/(Math.abs(dy)+160))
-          if(!reduce && hasMoved){
+          if(!reduce && hasMoved && !DISABLE_SUCK){
             const bdx=x-bhX, bdy=y-bhY, bd=Math.hypot(bdx,bdy)
             bend += bhMass*12*Math.exp(-bd/96)*(bdy/(Math.abs(bdy)+42))*(1-bd/260)
           }
@@ -378,7 +378,7 @@ export default function AstroField() {
         let py = g.y*h + my*0.06
         let scale = 1
         let alpha = g.baseA + 0.07*Math.sin(now*0.0011+g.phase)
-        if(!reduce && hasMoved){
+        if(!reduce && hasMoved && !DISABLE_SUCK){
           const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
           const horizon = 10+mass*2.2
           if(d < 200){
@@ -417,7 +417,7 @@ export default function AstroField() {
         px = g.x*w + mx*0.06
         py = g.y*h + my*0.06
         // lensing subtle saat dekat BH (Einstein)
-        if(!reduce && hasMoved){
+        if(!reduce && hasMoved && !DISABLE_SUCK){
           const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
           if(d<120 && d>20){
             const lens = mass*8*Math.exp(-d/90)
@@ -429,7 +429,7 @@ export default function AstroField() {
         ctx.save()
         ctx.translate(px,py)
         // putar sedikit searah spiral saat dekat BH
-        if(!reduce && hasMoved){
+        if(!reduce && hasMoved && !DISABLE_SUCK){
           const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
           if(d<90) ctx.rotate(Math.atan2(dy,dx)*0.14)
         }
@@ -526,7 +526,7 @@ export default function AstroField() {
         const tw=reduce?1:0.76 + s.twA*Math.sin(now*0.001*s.speed + s.phase) + 0.08*Math.cos(now*0.00037*s.speed*1.7)
         let a=Math.max(0,Math.min(1,s.base*tw))
         let px=x + mx*(0.12+s.r*0.07), py=y + my*(0.12+s.r*0.07)
-        if(!reduce && hasMoved){
+        if(!reduce && hasMoved && !DISABLE_SUCK){
           const dx=bhX-px, dy=bhY-py, d=Math.hypot(dx,dy)
           if(d<220){
             const horizon=10+mass*2.2
@@ -575,7 +575,7 @@ export default function AstroField() {
         const hover=Math.max(0,1-distMouse/170)
         const isHover=hover>0.09
         let lensedPts=pts
-        if(!reduce && hasMoved){
+        if(!reduce && hasMoved && !DISABLE_SUCK){
           lensedPts=pts.map(([x,y])=>{
             const dx=bhX-x, dy=bhY-y, d=Math.hypot(dx,dy)
             if(d<110){ const f=mass*3.6*Math.exp(-d/64); return [x+dx/d*f, y+dy/d*f] }
@@ -646,7 +646,7 @@ export default function AstroField() {
         for(let i=shootings.length-1;i>=0;i--){const s=shootings[i]; const p=(now-s.t0)/s.dur; if(p>=1){shootings.splice(i,1); continue} const x=s.x0+s.vx*p, y=s.y0+s.vy*p+200*p*p, alpha=p<0.10?p/0.10:1-(p-0.10)/0.90, trail=22; const grad=ctx.createLinearGradient(x-s.vx*0.022*trail, y-s.vy*0.022*trail, x,y); grad.addColorStop(0,'rgba(233,223,201,0)'); grad.addColorStop(0.5,`rgba(201,173,120,${alpha*0.42})`); grad.addColorStop(1,`rgba(255,255,255,${alpha*0.98})`); ctx.strokeStyle=grad; ctx.lineWidth=1.75; ctx.beginPath(); ctx.moveTo(x-s.vx*0.019*trail, y-s.vy*0.019*trail); ctx.lineTo(x,y); ctx.stroke(); ctx.fillStyle=`rgba(255,255,255,${alpha})`; ctx.beginPath(); ctx.arc(x,y,1.7,0,Math.PI*2); ctx.fill(); ctx.fillStyle=`rgba(233,223,201,${alpha*0.17})`; ctx.beginPath(); ctx.arc(x,y,5.2,0,Math.PI*2); ctx.fill()}
       }
 
-      if(!reduce && hasMoved && mouseX>-9000){
+      if(!reduce && hasMoved && mouseX>-9000 && !DISABLE_SUCK && !DISABLE_CURSOR){
         drawBlackHole(bhX,bhY,mass)
       }
 
