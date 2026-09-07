@@ -163,7 +163,8 @@ export default function AstroField() {
                   span.style.borderLeftColor = idx%2 ? 'rgba(198,94,46,0.85)' : 'transparent'
                   // ikut stagger normal kalau section belum .in, pakai delay kecil
                   if(!isIn) span.style.transitionDelay = `${Math.min(idx*14, 180)}ms`
-                  setTimeout(type, 14 + Math.random()*12)
+                  // agak perlambat setelah tertelan biar realistik (sebelumnya 14-26ms, sekarang 38-58ms)
+                  setTimeout(type, 38 + Math.random()*20)
                 } else {
                   span.style.borderLeft='none'
                   span.style.paddingLeft='0'
@@ -195,7 +196,8 @@ export default function AstroField() {
           }, 80)
           setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 900)
         } else {
-          setTimeout(doType, 420)
+          // jeda sejenak setelah tertelan biar realistik (sebelumnya 420ms → 620ms)
+          setTimeout(doType, 620)
         }
       }
     }
