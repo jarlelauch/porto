@@ -24,13 +24,21 @@ const GLYPH_SET = ['e','π','φ','Σ','∫','∞','λ','ψ','Ω','Δ','α','β',
 function solveKepler(M, e) { let E = M; for(let i=0;i<4;i++) E = E - (E - e*Math.sin(E)-M)/(1 - e*Math.cos(E)); return E }
 
 export default function AstroField() {
+  const DISABLE_BH = true // matiin total sistem black hole & kursor
   const ref = useRef(null)
   useEffect(() => {
     const canvas = ref.current
+    if (DISABLE_BH) {
+      if(canvas) canvas.style.display='none'
+      document.documentElement.classList.remove('bh-active')
+      const hint=document.querySelector('.bh-hint')
+      if(hint) hint.style.display='none'
+      return
+    }
     const ctx = canvas.getContext('2d')
     let raf = 0, w=0, h=0
     const dpr = Math.min(window.devicePixelRatio||1,2)
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || DISABLE_BH
 
     const stars = Array.from({length: 360}, () => {
       const t=Math.random(); let col='233,223,201'
