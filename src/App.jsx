@@ -7,6 +7,35 @@ const SKILLS = [
   { cat: 'Bidang', items: ['Agen LLM', 'Otomasi data', 'Desain vektor'] },
 ]
 
+const PROJECTS = [
+  {
+    title: 'j-sgent',
+    desc: "J S'GENT Orbital AI System — intelijen agen pribadi untuk satu akun: menganalisis, mengotomatisasi, menjaga orbit.",
+    tags: ['Python', 'agents', 'live'],
+    url: 'https://github.com/jarlelauch/j-sgent',
+    linkLabel: 'repo',
+  },
+  {
+    title: 'github-profile-blackhole',
+    desc: 'Profil GitHub yang hidup — black hole, orbit, filotaksis, gelombang pendulum, ditutup seekor naga API (SVG CSS) dan halaman interaktif yang mengejar kursor.',
+    tags: ['SVG', 'CSS', 'JS'],
+    url: 'https://github.com/jarlelauch/jarlelauch',
+    linkLabel: 'profil',
+    extra: {
+      url: 'https://jarlelauch.github.io/jarlelauch/naga.html',
+      label: 'naga interaktif',
+    },
+  },
+  {
+    title: 'porto — situs ini',
+    desc: 'Portofolio minimal bertema matematika; dibangun di atas React dan dihidupkan lewat GitHub Pages.',
+    tags: ['React', 'Vite', 'GitHub Pages'],
+    url: 'https://jarlelauch.github.io/porto/',
+    linkLabel: 'live',
+    extra: { url: 'https://github.com/jarlelauch/porto', label: 'repo' },
+  },
+]
+
 const SPEC = `> const jarle = {
 >   nama:      "JARLE LAUCH",
 >   bekerja:   ["sistem", "otomasi", "visualisasi"],
@@ -27,6 +56,12 @@ function App() {
           </li>
           <li>
             <a href="#keterampilan">keterampilan</a>
+          </li>
+          <li>
+            <a href="#proyek">proyek</a>
+          </li>
+          <li>
+            <a href="#kontak">kontak</a>
           </li>
           <li>
             <a
@@ -62,7 +97,7 @@ function App() {
             </small>
           </p>
           <div className="cta">
-            <a className="btn solid" href="#tentang">
+            <a className="btn solid" href="#proyek">
               lihat karya ↓
             </a>
             <a className="btn" href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
@@ -120,6 +155,59 @@ function App() {
               </div>
             ))}
           </div>
+        </section>
+      <section className="section shell" id="proyek">
+          <div className="s-head">
+            <span className="s-num">03</span>
+            <h2 className="s-name">proyek</h2>
+          </div>
+          <div className="cards">
+            {PROJECTS.map((p) => (
+              <article className="proj" key={p.title}>
+                <h3>{p.title}</h3>
+                <p>{p.desc}</p>
+                <div className="tags">
+                  {p.tags.map((t) => (
+                    <span key={t}>{t}</span>
+                  ))}
+                </div>
+                <div className="links">
+                  <a href={p.url} target="_blank" rel="noreferrer">
+                    {p.linkLabel} ↗
+                  </a>
+                  {p.extra && (
+                    <a href={p.extra.url} target="_blank" rel="noreferrer">
+                      {p.extra.label} ↗
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section shell kontak" id="kontak">
+          <div className="s-head">
+            <span className="s-num">04</span>
+            <h2 className="s-name">kontak</h2>
+          </div>
+          <p className="big">
+            Ada persamaan yang ingin dipecahkan <em>bersama</em>?
+          </p>
+          <div className="cta">
+            <a className="btn solid" href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
+              github ↗
+            </a>
+            <a className="btn" href="https://github.com/jarlelauch/jarlelauch" target="_blank" rel="noreferrer">
+              profil ↗
+            </a>
+          </div>
+          <p className="lede">
+            <small>
+              respon tercepat lewat GitHub — mulai dari isu, PR, atau pesan
+              langsung
+            </small>
+          </p>
         </section>
       </main>
 
