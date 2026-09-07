@@ -94,21 +94,26 @@ export default function AstroField() {
         const rc = rects[Math.floor(Math.random()*rects.length)]
         const sx = rc.left + Math.random()*rc.width
         const sy = rc.top + rc.height*0.55 + (Math.random()-0.5)*4
-        // spawn di canvas coords (screen)
+        // arah langsung ke BH biar beneran kesedot (bug kemarin random jadi tidak ketarik)
+        const dx0 = mouseX - sx, dy0 = mouseY - sy
+        const d0 = Math.hypot(dx0, dy0) || 1
+        const ang0 = Math.atan2(dy0, dx0)
+        const speed = 52 + Math.random()*28
         selectDust.push({
           ch, x: sx, y: sy,
-          vx: (Math.random()-0.5)*22, vy: (Math.random()-0.5)*22 - 8,
-          size: 13 + Math.random()*5,
+          vx: Math.cos(ang0)*speed + (Math.random()-0.5)*10,
+          vy: Math.sin(ang0)*speed + (Math.random()-0.5)*10,
+          size: 14 + Math.random()*6,
           a: 1, life: 1,
-          spin: (Math.random()-0.5)*0.18,
+          spin: (Math.random()-0.5)*0.22,
           rot: Math.random()*Math.PI*2,
         })
       }
       if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
       // clear selection biar kelihatan kesedot
       try{ sel.removeAllRanges() }catch{}
-      // boost BH biar nyedot ganas
-      massTarget = 2.6; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
+      // boost BH biar nyedot ganas — lebih besar pas select
+      massTarget = 2.8; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 1200)
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
@@ -375,21 +380,21 @@ export default function AstroField() {
         }
       }
 
-      // select-suck — huruf yang di-select beneran spiral masuk BH (screen coords)
+      // select-suck — huruf yang di-select beneran spiral masuk BH (screen coords) — FIX: grav ganas biar keliatan
       if(!reduce && selectDust.length){
         for(let i=selectDust.length-1;i>=0;i--){
           const p=selectDust[i]
           const dx=mouseX - p.x, dy=mouseY - p.y, d=Math.hypot(dx,dy)
-          const grav = mass*0.13 * Math.exp(-d/92) + 0.022
+          const grav = mass*0.38 * Math.exp(-d/58) + 0.09
           const ang=Math.atan2(dy,dx)
-          p.vx += Math.cos(ang)*grav*18
-          p.vy += Math.sin(ang)*grav*18
-          p.vx += -Math.sin(ang)*grav*7
-          p.vy += Math.cos(ang)*grav*7
-          p.vx *= 0.984; p.vy *= 0.984
-          p.x += p.vx * 0.016; p.y += p.vy * 0.016
+          p.vx += Math.cos(ang)*grav*22
+          p.vy += Math.sin(ang)*grav*22
+          p.vx += -Math.sin(ang)*grav*8
+          p.vy += Math.cos(ang)*grav*8
+          p.vx *= 0.975; p.vy *= 0.975
+          p.x += p.vx * 0.020; p.y += p.vy * 0.020
           p.rot += p.spin
-          p.life -= 0.013
+          p.life -= 0.011
           p.a = Math.max(0, p.life) * 0.98
           const horizon = 10+mass*2.2
           if(d < horizon+4 || p.life<=0){
