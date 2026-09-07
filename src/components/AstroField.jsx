@@ -120,6 +120,18 @@ export default function AstroField() {
           const frag = r.cloneContents()
           const t = frag.textContent || ''
           if(t.length===0) continue
+          // simpan style asli biar font gak jadi sama pas regen
+          let style=null
+          try{
+            const refEl = r.startContainer.nodeType===3 ? r.startContainer.parentElement : r.startContainer
+            if(refEl && refEl.nodeType===1){
+              const cs = window.getComputedStyle(refEl)
+              style = { fontFamily: cs.fontFamily, fontWeight: cs.fontWeight, fontStyle: cs.fontStyle, color: cs.color, letterSpacing: cs.letterSpacing, fontSize: cs.fontSize }
+            }
+            // kalau frag ada <b> atau <em>, tandai biar span ikutin
+            if(frag.querySelector && frag.querySelector('b, strong')) style = { ...(style||{}), fontWeight: '700' }
+            if(frag.querySelector && frag.querySelector('em, i')) style = { ...(style||{}), fontStyle: 'italic' }
+          }catch{}
           // simpan range collapsed untuk insert marker setelah delete
           const save = r.cloneRange()
           try{ r.deleteContents() }catch{}
@@ -129,7 +141,7 @@ export default function AstroField() {
             try{ document.body.appendChild(marker) }catch{}
           }
           // simpan text asli (jangan trim, biar spasi tidak hilang)
-          saved.push({ text: t, marker })
+          saved.push({ text: t, marker, style })
         }
         sel.removeAllRanges()
       }catch{}
@@ -139,7 +151,7 @@ export default function AstroField() {
       // muncul lagi kayak diketik — cepet + ikut animasi scroll normal (fix: pakai marker, bukan Range detached)
       if(saved.length){
         const doType = ()=>{
-          for(const { text, marker } of saved){
+          for(const { text, marker, style } of saved){
             try{
               if(!marker.parentNode) continue
               const span = document.createElement('span')
@@ -149,6 +161,14 @@ export default function AstroField() {
               span.style.transitionDelay='0ms'
               span.style.whiteSpace='pre-wrap'
               span.style.wordBreak='break-word'
+              if(style){
+                if(style.fontFamily) span.style.fontFamily = style.fontFamily
+                if(style.fontWeight) span.style.fontWeight = style.fontWeight
+                if(style.fontStyle) span.style.fontStyle = style.fontStyle
+                if(style.color) span.style.color = style.color
+                if(style.letterSpacing) span.style.letterSpacing = style.letterSpacing
+                if(style.fontSize) span.style.fontSize = style.fontSize
+              }
               const sec = marker.parentElement?.closest('.section')
               const isIn = sec?.classList.contains('in')
               if(isIn) span.style.opacity='1'
