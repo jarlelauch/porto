@@ -1,21 +1,23 @@
 # Σ(porto) — portofolio JARLE LAUCH
 
-Web portofolio minimal bertema matematika. Dibangun dengan **React + Vite**,
+Web portofolio manuskrip matematika. Dibangun dengan **React + Vite**,
 di-hosting lewat **GitHub Pages**.
 
 Live: **https://jarlelauch.github.io/porto/**
 
 ## Bagian
 
-- **Hero** — formula `e^{iπ} + 1 = 0`, status, CTA
-- **Tentang** — profil singkat + kartu spesifik `const jarle = { … }`
-- **Keterampilan** — chips 4 kategori
-- **Proyek** — katalog karya (j-sgent, github-profile-blackhole, situs ini)
+- **Hero** — judul `JARLE LAUCH.`, formula `e^{iπ} + 1 = 0`, koordinat, CTA
+- **Strip formula** — teles berjalan persamaan (Euler, Basel, Fibonacci, …)
+- **Tentang** — profil singkat + `$ whoami` dan baris presisi
+- **Keterampilan** — tabel book-keeping (variabel :: nilai)
+- **Karya** — katalog karya bernomor (j-sgent, github-profile-blackhole, situs ini)
 - **Demo — naga api** — embed langsung dari halaman naga interaktif (bisa dimainkan di dalam situs)
 - **Kontak** — lewat GitHub
 
-Latar belakang berupa kanvas glif matematika (`Σ π φ ∂ ∞ …`) yang melayang,
-dengan penghormatan pada `prefers-reduced-motion`.
+Latar berupa **bidang kartesian** (kisi kertas grafik, sumbu, kurva sinus yang
+dipelan) dengan gaya manuskrip hangat — arang, krim, aksen karat; tanpa glow,
+bergerak halus dan menghormati `prefers-reduced-motion`.
 
 ## Menjalankan lokal
 
