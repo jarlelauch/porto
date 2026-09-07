@@ -358,10 +358,10 @@ function App() {
           <div className="aizen-grid">
             <div className="aizen-frame">
               <img
-                src="https://cdn.myanimelist.net/images/characters/5/70075.jpg"
-                alt="Aizen Sousuke — Bleach"
+                src="/porto/aizen.png"
+                alt="Aizen Sousuke — Bleach (official art © Tite Kubo / Shueisha, Studio Pierrot)"
                 loading="lazy"
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
+                onError={(e) => { e.currentTarget.src = 'https://bleach-anime.com/assets/img/character/chara_50.png'; e.currentTarget.onerror = null }}
               />
               <span>藍染 惣右介 — Aizen Sōsuke</span>
               <span className="aizen-cap">“sejak awal, tak ada yang berdiri di langit”</span>
