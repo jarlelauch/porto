@@ -52,6 +52,8 @@ export default function AstroField() {
     }))
     // debu dari foto aizen — partikel kecil yang kesedot
     const aizenDust = []
+    // select-suck — huruf yang di-select beneran kesedot masuk BH
+    const selectDust = []
 
     let mx=0,my=0,tx=0,ty=0
     let mouseX = -9999, mouseY = -9999
@@ -67,7 +69,47 @@ export default function AstroField() {
       tx=cx*12; ty=cy*10
     }
     const onDown = () => { mouseDown=true; massTarget=2.2 }
-    const onUp = () => { mouseDown=false; massTarget=1 }
+    const onUp = () => {
+      mouseDown=false; massTarget=1
+      // select-suck — pas select tulisan, hurufnya beneran kesedot masuk BH
+      if(reduce) return
+      const sel = window.getSelection()
+      if(!sel || sel.isCollapsed || !sel.rangeCount) return
+      const text = sel.toString()
+      if(!text || text.trim().length < 1) return
+      // ambil rects dari selection
+      let rects=[]
+      for(let i=0;i<sel.rangeCount;i++){
+        try{
+          const r = sel.getRangeAt(i)
+          const rs = r.getClientRects()
+          for(let j=0;j<rs.length;j++) rects.push(rs[j])
+        }catch{}
+      }
+      if(rects.length===0) return
+      // untuk tiap huruf di text, spawn partikel di posisi acak dalam rects
+      const chars = text.replace(/\s+/g, '').split('').slice(0, 80) // limit 80 biar tidak spam
+      if(chars.length===0) return
+      for(const ch of chars){
+        const rc = rects[Math.floor(Math.random()*rects.length)]
+        const sx = rc.left + Math.random()*rc.width
+        const sy = rc.top + rc.height*0.55 + (Math.random()-0.5)*4
+        // spawn di canvas coords (screen)
+        selectDust.push({
+          ch, x: sx, y: sy,
+          vx: (Math.random()-0.5)*22, vy: (Math.random()-0.5)*22 - 8,
+          size: 13 + Math.random()*5,
+          a: 1, life: 1,
+          spin: (Math.random()-0.5)*0.18,
+          rot: Math.random()*Math.PI*2,
+        })
+      }
+      if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
+      // clear selection biar kelihatan kesedot
+      try{ sel.removeAllRanges() }catch{}
+      // boost BH biar nyedot ganas
+      massTarget = 2.6; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
+    }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
     window.addEventListener('mouseup', onUp)
@@ -330,6 +372,48 @@ export default function AstroField() {
           ctx.moveTo(p.x - mx - p.vx*0.04, p.y - my - p.vy*0.04)
           ctx.lineTo(p.x - mx, p.y - my)
           ctx.stroke()
+        }
+      }
+
+      // select-suck — huruf yang di-select beneran spiral masuk BH (screen coords)
+      if(!reduce && selectDust.length){
+        for(let i=selectDust.length-1;i>=0;i--){
+          const p=selectDust[i]
+          const dx=mouseX - p.x, dy=mouseY - p.y, d=Math.hypot(dx,dy)
+          const grav = mass*0.13 * Math.exp(-d/92) + 0.022
+          const ang=Math.atan2(dy,dx)
+          p.vx += Math.cos(ang)*grav*18
+          p.vy += Math.sin(ang)*grav*18
+          p.vx += -Math.sin(ang)*grav*7
+          p.vy += Math.cos(ang)*grav*7
+          p.vx *= 0.984; p.vy *= 0.984
+          p.x += p.vx * 0.016; p.y += p.vy * 0.016
+          p.rot += p.spin
+          p.life -= 0.013
+          p.a = Math.max(0, p.life) * 0.98
+          const horizon = 10+mass*2.2
+          if(d < horizon+4 || p.life<=0){
+            if(d < horizon+10){
+              ctx.fillStyle='rgba(255,255,255,0.52)'
+              ctx.beginPath(); ctx.arc(bhX,bhY,1.7,0,Math.PI*2); ctx.fill()
+            }
+            selectDust.splice(i,1); continue
+          }
+          const px = p.x - mx, py = p.y - my
+          const scale = Math.max(0.28, 1 - (210-d)/210*0.38)
+          ctx.save()
+          ctx.translate(px,py)
+          ctx.rotate(p.rot*0.5 + ang*0.10)
+          ctx.scale(scale, scale)
+          ctx.globalAlpha = p.a
+          ctx.fillStyle = /[0-9]/.test(p.ch) ? 'rgba(201,173,120,0.96)' : /[πφΣ∫∞λψΩΔαβ]/.test(p.ch) ? 'rgba(198,94,46,0.92)' : 'rgba(233,223,201,0.96)'
+          ctx.font = `${p.size}px ui-monospace, monospace`
+          ctx.textAlign='center'; ctx.textBaseline='middle'
+          ctx.fillText(p.ch, 0, 0)
+          ctx.strokeStyle=`rgba(201,173,120,${p.a*0.22})`
+          ctx.lineWidth=0.6
+          ctx.beginPath(); ctx.moveTo(-p.vx*0.05, -p.vy*0.05); ctx.lineTo(0,0); ctx.stroke()
+          ctx.restore()
         }
       }
 
