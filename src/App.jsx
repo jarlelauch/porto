@@ -195,65 +195,69 @@ function App() {
   const aizen = useReveal()
   const kontak = useReveal()
 
-  // stealth aizen audio: area di mana foto mulai keload → interaksi = play theme (tanpa UI)
+  // stealth aizen audio: horizontal band sama Y foto → interaksi = play, keluar band = pause (tanpa UI)
   useEffect(() => {
     const frame = document.querySelector('.aizen-frame')
     const img = frame?.querySelector('img')
     if (!frame || !img) return
-    // audio sistem saja (tanpa UI)
-    const audio = new Audio(`${import.meta.env.BASE_URL}aizen-theme.mp3`)
+    const audio = new Audio(`${import.meta.env.BASE_URL}aizen-youtube.webm`)
     audio.preload = 'auto'
-    audio.volume = 0.55
+    audio.volume = 0.58
     audio.loop = false
-    let overlay = null
-    let armed = false
-    const play = () => {
-      if (audio.paused) audio.play().catch(()=>{})
-      else { audio.currentTime = 0; audio.play().catch(()=>{}) }
-    }
-    const createOverlay = () => {
-      if (overlay) return
-      const rect = img.getBoundingClientRect()
-      // fallback ke frame jika img belum punya size
-      const target = rect.width > 10 ? img : frame
-      const r = target.getBoundingClientRect()
-      overlay = document.createElement('div')
-      // sistem saja, tidak tampil sebagai UI
-      overlay.setAttribute('aria-hidden', 'true')
-      overlay.style.position = 'absolute'
-      overlay.style.left = '0'
-      overlay.style.top = '0'
-      overlay.style.width = '100%'
-      overlay.style.height = '100%'
-      overlay.style.opacity = '0'
-      overlay.style.pointerEvents = 'auto'
-      overlay.style.cursor = 'default'
-      overlay.style.zIndex = '5'
-      // tempatkan di dalam frame (frame sudah relative di CSS)
-      frame.style.position = 'relative'
-      frame.appendChild(overlay)
-      // interaksi = play (hover, klik, sentuh)
-      overlay.addEventListener('pointerenter', play, { passive: true })
-      overlay.addEventListener('click', play)
-      overlay.addEventListener('touchstart', play, { passive: true })
-      // juga kalau kursor melintas area frame saat foto sudah keload
-      frame.addEventListener('pointerenter', play, { passive: true, once: false })
-      armed = true
-    }
-    // select area di mana foto mulai keload (IntersectionObserver)
-    const obs = new IntersectionObserver((entries)=>{
-      for (const e of entries){
-        if (e.isIntersecting){
-          createOverlay()
-          // preload audio saat mulai terlihat
-          audio.load()
-        }
+    // langsung load
+    try{ audio.load() }catch{}
+    const START = 50 // detik 50 iconic Treachery
+    const END = 132 // selesai bagian ikonik ~2:12 (sesuaikan kalau mau)
+    let inBand = false
+    const onBandEnter = () => {
+      if (!inBand){
+        inBand = true
+        try{
+          if (audio.currentTime < START || audio.currentTime >= END) audio.currentTime = START
+          audio.play().catch(()=>{})
+        }catch{}
       }
-    }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' })
+    }
+    const onBandLeave = () => {
+      if (inBand){
+        inBand = false
+        audio.pause()
+      }
+    }
+    audio.addEventListener('timeupdate', ()=>{
+      if (audio.currentTime >= END) { audio.pause(); audio.currentTime = START }
+    })
+    // handler horizontal: cek Y kursor vs band foto
+    const onMove = (e) => {
+      const r = (img.getBoundingClientRect().width > 10 ? img : frame).getBoundingClientRect()
+      const y = e.clientY
+      // band horizontal: Y sama dengan foto, X bebas (full viewport)
+      if (y >= r.top - 8 && y <= r.bottom + 8){
+        onBandEnter()
+      } else {
+        onBandLeave()
+      }
+    }
+    const onTouch = (e) => { if(e.touches[0]) onMove(e.touches[0]) }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    window.addEventListener('touchmove', onTouch, { passive: true })
+    window.addEventListener('touchstart', onTouch, { passive: true })
+    // pause kalau tab hidden
+    const onVis = ()=>{ if(document.hidden) audio.pause() }
+    document.addEventListener('visibilitychange', onVis)
+    // preload segera saat foto mulai keload
+    const obs = new IntersectionObserver((entries)=>{
+      for(const e of entries) if(e.isIntersecting) try{ audio.load() }catch{}
+    }, { threshold: 0.05 })
     obs.observe(img)
-    // fallback: kalau observer tidak support atau sudah di viewport
-    if (img.complete) createOverlay()
-    return () => { obs.disconnect(); if (overlay) overlay.remove(); audio.pause(); }
+    return () => {
+      obs.disconnect()
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('touchmove', onTouch)
+      window.removeEventListener('touchstart', onTouch)
+      document.removeEventListener('visibilitychange', onVis)
+      audio.pause()
+    }
   }, [])
 
   return (
