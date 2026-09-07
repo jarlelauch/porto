@@ -38,14 +38,10 @@ const PROJECTS = [
   },
   {
     title: 'github-profile-blackhole',
-    desc: 'Profil GitHub yang hidup — black hole, orbit, filotaksis, gelombang pendulum, ditutup seekor naga API dan halaman interaktif yang mengejar kursor.',
-    tokens: ['SVG', 'CSS', 'JS', 'demo'],
+    desc: 'Profil GitHub yang hidup — black hole, orbit, filotaksis, gelombang pendulum, dan field aksis minimal.',
+    tokens: ['SVG', 'CSS', 'JS'],
     url: 'https://github.com/jarlelauch/jarlelauch',
     linkLabel: 'profil',
-    extra: {
-      url: 'https://jarlelauch.github.io/jarlelauch/naga.html',
-      label: 'naga interaktif',
-    },
   },
   {
     title: 'porto — situs ini',
@@ -249,9 +245,6 @@ function App() {
                 <a className="btn" href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
                   github ↗
                 </a>
-                <a className="btn" href="https://jarlelauch.github.io/jarlelauch/naga.html" target="_blank" rel="noreferrer">
-                  naga api ↗
-                </a>
               </div>
             </div>
             <HeroOrbit />
@@ -358,10 +351,10 @@ function App() {
           <div className="aizen-grid">
             <div className="aizen-frame">
               <img
-                src="/porto/aizen.png"
-                alt="Aizen Sousuke — Bleach (official art © Tite Kubo / Shueisha, Studio Pierrot)"
+                src="/porto/aizen.jpg"
+                alt="Aizen Sousuke — Bleach (Pinterest portrait, © Tite Kubo / Shueisha)"
                 loading="lazy"
-                onError={(e) => { e.currentTarget.src = 'https://bleach-anime.com/assets/img/character/chara_50.png'; e.currentTarget.onerror = null }}
+                onError={(e) => { e.currentTarget.src = 'https://i.pinimg.com/736x/63/32/47/6332477875ef2c84777440c302b39b58.jpg'; e.currentTarget.onerror = null }}
               />
               <span>藍染 惣右介 — Aizen Sōsuke</span>
               <span className="aizen-cap">“sejak awal, tak ada yang berdiri di langit”</span>
