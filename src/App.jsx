@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import AxisField from './components/AxisField'
-import Stamp from './components/Stamp'
 
 const STRIP = [
   'e^{i\u03c0} + 1 = 0',
@@ -93,14 +92,13 @@ function App() {
   const tentang = useReveal()
   const keterampilan = useReveal()
   const karya = useReveal()
-  const demo = useReveal()
   const kontak = useReveal()
 
   return (
     <>
       <AxisField />
       <header className="nav shell" id="top">
-<span className="brand">JARLE&nbsp;LAUCH</span>
+<span className="brand">JARLELAUCH</span>
         <ul>
           <li>
             <a href="#tentang">tentang</a>
@@ -128,12 +126,11 @@ function App() {
 
       <main>
         <section className="hero shell">
-          <Stamp />
           <p className="eyebrow">
             <b>◈</b> orbit : membuka peluang
           </p>
           <h1 className="title">
-            <span className="title-line">JARLE LAUCH<span className="dot">.</span></span>
+            <span className="title-line">JARLELAUCH<span className="dot">.</span></span>
           </h1>
           <p className="sub">matematika dalam kode — sistem, otomasi, representasi yang presisi</p>
           <p className="coord">@ asal : 0 . 0 — segalanya valid sebelum nol</p>
@@ -250,34 +247,9 @@ function App() {
           ))}
         </section>
 
-        <section className="section shell" id="demo" ref={demo}>
-          <div className="s-head">
-            <span className="s-num">§04</span>
-            <h2 className="s-name">demo — naga api</h2>
-          </div>
-          <div className="frame">
-            <iframe
-              src="https://jarlelauch.github.io/jarlelauch/naga.html"
-              title="Naga API interaktif — gerakkan kursor, tahan Spasi atau klik untuk nafas api"
-              loading="lazy"
-            />
-          </div>
-          <p className="frame-cap">
-            main langsung di sini — gerakkan kursor · tahan <b>spasi</b> /
-            klik untuk nafas api &middot;{' '}
-            <a
-              href="https://jarlelauch.github.io/jarlelauch/naga.html"
-              target="_blank"
-              rel="noreferrer"
-            >
-              layar penuh ↗
-            </a>
-          </p>
-        </section>
-
         <section className="section shell kontak" id="kontak" ref={kontak}>
           <div className="s-head">
-            <span className="s-num">§05</span>
+            <span className="s-num">§04</span>
             <h2 className="s-name">kontak</h2>
           </div>
           <p className="big">
@@ -299,7 +271,7 @@ function App() {
 
       <footer className="footer shell">
         <span>
-          © 2026 JARLE LAUCH · persamaan demi persamaan · dihosting di{' '}
+          © 2026 JARLELAUCH · persamaan demi persamaan · dihosting di{' '}
           <a href="https://js.org" target="_blank" rel="noreferrer">
             js.org ↗
           </a>

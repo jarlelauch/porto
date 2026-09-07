@@ -7,7 +7,7 @@ Live: **https://jarlelauch.github.io/porto/**
 
 ## Bagian
 
-- **Hero** — judul `JARLE LAUCH.`, formula `e^{iπ} + 1 = 0`, koordinat, CTA, stempel monogram
+- **Hero** — judul `JARLELAUCH.`, formula `e^{iπ} + 1 = 0`, koordinat, CTA
 - **Strip formula** — teles berjalan persamaan (Euler, Basel, Fibonacci, …)
 - **Tentang** — profil singkat + `$ whoami` dan baris presisi
 - **Keterampilan** — tabel book-keeping 6 kategori (variabel :: nilai) termasuk deployment & animasi vektor
