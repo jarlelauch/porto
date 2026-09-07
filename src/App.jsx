@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import AxisField from './components/AxisField'
+import { useEffect, useRef, useState } from 'react'
+import AstroField from './components/AstroField'
 
 const STRIP = [
   'e^{i\u03c0} + 1 = 0',
@@ -88,6 +88,101 @@ function useReveal() {
   return ref
 }
 
+function MoonPhase() {
+  const [phase, setPhase] = useState(0)
+  useEffect(() => {
+    // simple approx: days since known new moon 2000-01-06
+    const known = new Date('2000-01-06T18:14:00Z').getTime()
+    const now = Date.now()
+    const diff = now - known
+    const lun = 29.53058867 * 24 * 3600 * 1000
+    const p = ((diff % lun) + lun) % lun / lun
+    setPhase(p)
+  }, [])
+  const pct = Math.round(phase * 100)
+  // 0=new, 0.25=first quarter, 0.5=full, 0.75=last
+  let label = 'new'
+  if (phase < 0.03 || phase > 0.97) label = 'new'
+  else if (phase < 0.22) label = 'waxing crescent'
+  else if (phase < 0.28) label = 'first quarter'
+  else if (phase < 0.47) label = 'waxing gibbous'
+  else if (phase < 0.53) label = 'full'
+  else if (phase < 0.72) label = 'waning gibbous'
+  else if (phase < 0.78) label = 'last quarter'
+  else label = 'waning crescent'
+  return (
+    <span className="moon" title={`${label} · ${pct}%`}>
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.2" fill="none" stroke="rgba(201,173,120,0.55)" strokeWidth="1" />
+        <path
+          d={`M 7 1.8 A ${5.2 + (phase - 0.5) * 8} 5.2 0 0 ${phase > 0.5 ? 1 : 0} 7 12.2`}
+          fill="rgba(233,223,201,0.85)"
+          opacity={phase < 0.02 || phase > 0.98 ? 0 : 0.95}
+        />
+        {phase > 0.48 && phase < 0.52 && <circle cx="7" cy="7" r="5.2" fill="rgba(233,223,201,0.9)" />}
+      </svg>
+      <span className="moon-label">{label} · {pct}%</span>
+    </span>
+  )
+}
+
+function HeroOrbit() {
+  return (
+    <div className="hero-orbit" aria-hidden="true">
+      <svg viewBox="0 0 320 320" width="100%" height="100%">
+        {/* halo + ecliptic */}
+        <circle cx="160" cy="160" r="134" fill="none" stroke="rgba(201,173,120,0.045)" strokeDasharray="3 7" />
+        <circle cx="160" cy="160" r="122" fill="none" stroke="rgba(201,173,120,0.06)" strokeDasharray="3 7" />
+        {/* axis */}
+        <line x1="160" y1="18" x2="160" y2="302" stroke="rgba(201,173,120,0.08)" strokeWidth="0.7" />
+        <line x1="18" y1="160" x2="302" y2="160" stroke="rgba(201,173,120,0.08)" strokeWidth="0.7" />
+        <text x="164" y="22" fontFamily="ui-monospace" fontSize="5" letterSpacing="1" fill="rgba(201,173,120,0.28)">+y · ecliptic N</text>
+        {/* milky way subtle band inside */}
+        <ellipse cx="160" cy="160" rx="148" ry="18" fill="rgba(233,223,201,0.025)" transform="rotate(-18 160 160)" />
+        {/* orbits — 6 Keplerian minimal, ecc hint via offset */}
+        <g fill="none">
+          <ellipse cx="164" cy="160" rx="42" ry="30" stroke="rgba(198,94,46,0.36)" strokeWidth="1" transform="rotate(-12 160 160)" />
+          <ellipse cx="168" cy="160" rx="62" ry="44" stroke="rgba(201,173,120,0.22)" strokeWidth="1" transform="rotate(18 160 160)" />
+          <ellipse cx="162" cy="160" rx="86" ry="60" stroke="rgba(111,143,127,0.20)" strokeWidth="1" transform="rotate(-24 160 160)" />
+          <ellipse cx="172" cy="160" rx="112" ry="76" stroke="rgba(173,160,140,0.14)" strokeWidth="0.9" transform="rotate(9 160 160)" />
+          <ellipse cx="166" cy="160" rx="132" ry="90" stroke="rgba(201,173,120,0.10)" strokeWidth="0.8" transform="rotate(-8 160 160)" />
+        </g>
+        {/* accretion disk */}
+        <ellipse cx="160" cy="160" rx="16" ry="6.2" fill="rgba(198,94,46,0.08)" stroke="rgba(198,94,46,0.16)" strokeWidth="0.7" />
+        {/* center singularity */}
+        <circle cx="160" cy="160" r="6.5" fill="#12100c" stroke="rgba(198,94,46,0.65)" strokeWidth="1.1" />
+        <circle cx="160" cy="160" r="1.7" fill="rgba(198,94,46,0.95)" />
+        {/* perihelion dots subtle */}
+        <circle cx="206" cy="158" r="0.9" fill="rgba(198,94,46,0.42)" />
+        <circle cx="230" cy="172" r="0.9" fill="rgba(201,173,120,0.28)" />
+        {/* planets — animated via CSS, non-uniform simulated via easing */}
+        <g className="orbit-dot o1">
+          <circle cx="0" cy="0" r="3.2" fill="rgba(198,94,46,0.95)" />
+          <circle cx="0" cy="0" r="6" fill="rgba(198,94,46,0.14)" />
+        </g>
+        <g className="orbit-dot o2">
+          <circle cx="0" cy="0" r="2.6" fill="rgba(233,223,201,0.92)" />
+        </g>
+        <g className="orbit-dot o3">
+          <circle cx="0" cy="0" r="2.1" fill="rgba(111,143,127,0.9)" />
+        </g>
+        <g className="orbit-dot o4">
+          <circle cx="0" cy="0" r="1.7" fill="rgba(173,160,140,0.9)" />
+        </g>
+        {/* labels */}
+        <text x="160" y="34" textAnchor="middle" fontFamily="ui-monospace" fontSize="6.5" letterSpacing="1.5" fill="rgba(201,173,120,0.42)">MEMORY · L1</text>
+        <text x="282" y="162" textAnchor="middle" fontFamily="ui-monospace" fontSize="6.5" letterSpacing="1.5" fill="rgba(201,173,120,0.32)">AGENTS · L2</text>
+        <text x="160" y="288" textAnchor="middle" fontFamily="ui-monospace" fontSize="6.5" letterSpacing="1.5" fill="rgba(201,173,120,0.32)">INTERFACE · L3</text>
+        <text x="160" y="304" textAnchor="middle" fontFamily="ui-monospace" fontSize="5.2" letterSpacing="1.2" fill="rgba(201,173,120,0.22)">kepler ecc 0.12—0.34 · precess</text>
+      </svg>
+      <div className="hero-orbit-caption">
+        <span>◉ orbital system</span>
+        <span>6 planes · 1 singularity · kepler II</span>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const tentang = useReveal()
   const keterampilan = useReveal()
@@ -96,9 +191,9 @@ function App() {
 
   return (
     <>
-      <AxisField />
+      <AstroField />
       <header className="nav shell" id="top">
-<span className="brand">JARLELAUCH</span>
+        <span className="brand">JARLELAUCH · <MoonPhase /></span>
         <ul>
           <li>
             <a href="#tentang">tentang</a>
@@ -113,11 +208,7 @@ function App() {
             <a href="#kontak">kontak</a>
           </li>
           <li>
-            <a
-              href="https://github.com/jarlelauch"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
               github ↗
             </a>
           </li>
@@ -126,37 +217,40 @@ function App() {
 
       <main>
         <section className="hero shell">
-          <p className="eyebrow">
-            <b>◈</b> orbit : membuka peluang
-          </p>
-          <h1 className="title">
-            <span className="title-line">JARLELAUCH<span className="dot">.</span></span>
-          </h1>
-          <p className="sub">matematika dalam kode — sistem, otomasi, representasi yang presisi</p>
-          <p className="coord">@ asal : 0 . 0 — segalanya valid sebelum nol</p>
-          <div
-            className="formula"
-            role="img"
-            aria-label="e pangkat i pi tambah satu sama dengan nol"
-          >
-            <span className="it">e</span>
-            <sup>π</sup> + 1 <span className="eq">= 0</span>
-          </div>
-          <p className="lede">
-            Aku merancang perangkat lunak seperti menyusun persamaan —
-            mengambil variabel, memangkas yang tak perlu, sampai tersisa hanya
-            kode yang minimal dan konsisten.
-          </p>
-          <div className="cta">
-            <a className="btn solid" href="#karya">
-              buka karya ↓
-            </a>
-            <a className="btn" href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
-              github ↗
-            </a>
-            <a className="btn" href="https://jarlelauch.github.io/jarlelauch/naga.html" target="_blank" rel="noreferrer">
-              naga api ↗
-            </a>
+          <div className="hero-grid">
+            <div className="hero-text">
+              <p className="eyebrow">
+                <b>◈</b> orbit : membuka peluang
+                <span className="eyebrow-live">● live sky</span>
+              </p>
+              <h1 className="title">
+                <span className="title-line">
+                  JARLELAUCH<span className="dot">.</span>
+                </span>
+              </h1>
+              <p className="sub">matematika dalam kode — sistem, otomasi, representasi yang presisi</p>
+              <p className="coord">@ asal : 0 . 0 — segalanya valid sebelum nol</p>
+              <div className="formula" role="img" aria-label="e pangkat i pi tambah satu sama dengan nol">
+                <span className="it">e</span>
+                <sup>π</sup> + 1 <span className="eq">= 0</span>
+              </div>
+              <p className="lede">
+                Aku merancang perangkat lunak seperti menyusun persamaan — mengambil variabel, memangkas
+                yang tak perlu, sampai tersisa hanya kode yang minimal dan konsisten.
+              </p>
+              <div className="cta">
+                <a className="btn solid" href="#karya">
+                  buka karya ↓
+                </a>
+                <a className="btn" href="https://github.com/jarlelauch" target="_blank" rel="noreferrer">
+                  github ↗
+                </a>
+                <a className="btn" href="https://jarlelauch.github.io/jarlelauch/naga.html" target="_blank" rel="noreferrer">
+                  naga api ↗
+                </a>
+              </div>
+            </div>
+            <HeroOrbit />
           </div>
         </section>
 
@@ -174,16 +268,19 @@ function App() {
           <div className="s-head">
             <span className="s-num">§01</span>
             <h2 className="s-name">tentang</h2>
+            <span className="s-meta">◈ konstelasi φ · Σ · ∫ terlihat di langit</span>
           </div>
           <p>
-            Sistem, otomasi, dan representasi visual yang presisi adalah tempat
-            aku bekerja. Dari <b>profil GitHub</b> yang beranimasi penuh SVG
-            kalkulatif, sampai <b>j-sgent</b> — sistem intelijen agen pribadi —
-            aku membuat mesin yang diam-diam bekerja: elegan dari dalam ke luar.
+            Sistem, otomasi, dan representasi visual yang presisi adalah tempat aku bekerja. Dari{' '}
+            <b>profil GitHub</b> yang beranimasi penuh SVG kalkulatif, sampai <b>j-sgent</b> — sistem
+            intelijen agen pribadi — aku membuat mesin yang diam-diam bekerja: elegan dari dalam ke luar.
           </p>
-          <p>
-            Prinsipku sederhana, bila sesuatu bisa dijelaskan dalam sebaris
-            persamaan, ia layak menjadi bagian dari sistem.
+            <p>
+            Prinsipku sederhana, bila sesuatu bisa dijelaskan dalam sebaris persamaan, ia layak menjadi
+            bagian dari sistem. Langit di belakangmu bukan hiasan — ia adalah <b>warp grid</b> yang
+            melengkung oleh massa di pusat (lensing), <b>Milky Way</b> diagonal ultra-halus, 5 konstelasi
+            yang menyala saat hover (<b>φ Σ ∫ π ∞</b>), 6 orbit Kepler eccentric dengan precession, dan
+            bintang jatuh multi-trail. <b>Kursormu adalah black hole</b>: gerakkan untuk melensakan bintang & grid, <b>tahan klik</b> untuk放大 massa & menyedot debu, <b>hover</b> konstelasi, <b>klik</b> kosong untuk nova ripple.
           </p>
           <pre className="spec">{SPEC}</pre>
           <div className="stats">
@@ -196,6 +293,7 @@ function App() {
             <span>
               <b>∞</b> belum selesai
             </span>
+            <span style={{ color: 'var(--rust)' }}>✦ 360 bintang · 6 orbit Kepler · 5 konstelasi · cursor = BH · hold → suck</span>
           </div>
         </section>
 
@@ -263,9 +361,7 @@ function App() {
               profil ↗
             </a>
           </div>
-          <p className="muted">
-            respon tercepat lewat GitHub — mulai dari isu, PR, atau pesan langsung
-          </p>
+          <p className="muted">respon tercepat lewat GitHub — mulai dari isu, PR, atau pesan langsung</p>
         </section>
       </main>
 
@@ -280,6 +376,7 @@ function App() {
           <a href="#top">kembali ke asal ↑</a>
         </span>
       </footer>
+      <div className="bh-hint" aria-hidden="true">● kursor = black hole · gerak = lensing · tahan klik = sedot · klik kosong = nova</div>
     </>
   )
 }
