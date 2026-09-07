@@ -110,37 +110,50 @@ export default function AstroField() {
         })
       }
       if(selectDust.length>120) selectDust.splice(0, selectDust.length-120)
-      // BENERAN HAPUS huruf asli dari DOM biar keliatan kesedot masuk BH (bukan cuman partikel)
+      // BENERAN HAPUS huruf asli dari DOM — bug kemarin range jadi detached setelah deleteContents
       const saved = []
+      // simpan host untuk reinsert yang robust (tidak pakai Range setelah delete)
+      const bhX0 = hasMoved ? mouseX : w/2
+      const bhY0 = hasMoved ? mouseY : h/2
       try{
         for(let i=sel.rangeCount-1;i>=0;i--){
           const r = sel.getRangeAt(i)
           const frag = r.cloneContents()
           const t = frag.textContent || ''
           if(t.trim().length===0) continue
-          saved.push({ frag, text: t, range: r.cloneRange() })
+          // host = elemen terdekat yang masih ada setelah delete (section / p / div)
+          let host = r.commonAncestorContainer
+          if(host.nodeType===3) host = host.parentElement
+          if(!host || host===document.body) host = document.querySelector('.section') || document.body
+          // simpan posisi: parent + nextSibling sebelum delete biar insert tidak detached
+          const marker = document.createComment('bh')
+          try{ r.insertNode(marker) }catch{}
+          saved.push({ text: t, marker, host })
           try{ r.deleteContents() }catch{}
+          // marker tetap di DOM sebagai anchor untuk reinsert
         }
         sel.removeAllRanges()
       }catch{}
-      // boost BH biar nyedot ganas — lebih besar + cepat pas select
+      // boost BH — fallback ke tengah layar kalau BH belum gerak
+      if(!hasMoved){ mouseX=w/2; mouseY=h/2; hasMoved=true }
       massTarget = 3.0; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
-      // muncul lagi kayak diketik — cepet + ikut animasi scroll normal
+      // muncul lagi kayak diketik — cepet + ikut animasi scroll normal (fix: pakai marker, bukan Range detached)
       if(saved.length){
-        // cepetin ketik 14-26ms per huruf (sebelum 28-60ms)
         const doType = ()=>{
-          for(const { text, range } of saved){
+          for(const { text, marker } of saved){
             try{
+              if(!marker.parentNode) continue
               const span = document.createElement('span')
               span.className = 'stagger'
               span.style.borderLeft='1.5px solid rgba(198,94,46,0.85)'
               span.style.paddingLeft='1px'
               span.style.transitionDelay='0ms'
-              // jika section induk sudah .in, paksa visible
-              const sec = range.startContainer.parentElement?.closest('.section')
+              const sec = marker.parentElement?.closest('.section')
               const isIn = sec?.classList.contains('in')
-              if(isIn) span.style.opacity='1'; else span.classList.add('stagger')
-              range.insertNode(span)
+              if(isIn) span.style.opacity='1'
+              // insert sebelum marker, lalu hapus marker
+              marker.parentNode.insertBefore(span, marker)
+              marker.remove()
               let idx=0
               const chars = text.split('')
               const type = ()=>{
@@ -161,18 +174,17 @@ export default function AstroField() {
             }catch{}
           }
         }
-        // jika user lagi scroll kebawah, tunda sampai section masuk viewport biar ngikut animasi load normal
-        const needScroll = saved.some(({ range })=>{
-          const el = range.startContainer.parentElement?.closest('.section')
+        // jika user lagi scroll kebawah, tunda sampai section masuk viewport biar ngikut animasi load normal (pakai marker)
+        const needScroll = saved.some(({ marker })=>{
+          const el = marker.parentElement?.closest('.section')
           return el && !el.classList.contains('in')
         })
         if(needScroll){
-          // tunggu scroll — cek tiap 80ms sampai section .in, baru ketik
           let tries=0
           const waitScroll = setInterval(()=>{
             tries++
-            const ready = saved.every(({ range })=>{
-              const el = range.startContainer.parentElement?.closest('.section')
+            const ready = saved.every(({ marker })=>{
+              const el = marker.parentElement?.closest('.section')
               return !el || el.classList.contains('in')
             })
             if(ready || tries>40){
@@ -180,8 +192,7 @@ export default function AstroField() {
               doType()
             }
           }, 80)
-          // fallback tetap ketik setelah 900ms kalau tidak scroll
-          setTimeout(()=>{ clearInterval(waitScroll); if(document.body.contains(saved[0]?.range.startContainer)===false) doType() }, 900)
+          setTimeout(()=>{ clearInterval(waitScroll); try{ doType() }catch{} }, 900)
         } else {
           setTimeout(doType, 420)
         }
