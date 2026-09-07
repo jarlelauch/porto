@@ -86,14 +86,10 @@ a {
 .brand {
   font-family: var(--mono);
   font-size: 13px;
-  letter-spacing: 2px;
+  letter-spacing: 0.5px;
+  font-weight: 600;
   color: var(--paper);
   white-space: nowrap;
-}
-
-.brand i {
-  color: var(--rust);
-  font-style: normal;
 }
 
 .nav ul {

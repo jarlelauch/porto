@@ -100,9 +100,7 @@ function App() {
     <>
       <AxisField />
       <header className="nav shell" id="top">
-        <span className="brand">
-          <i>Σ</i> JARLE LAUCH
-        </span>
+<span className="brand">JARLE&nbsp;LAUCH</span>
         <ul>
           <li>
             <a href="#tentang">tentang</a>
@@ -300,7 +298,12 @@ function App() {
       </main>
 
       <footer className="footer shell">
-        <span>© 2026 JARLE LAUCH · persamaan demi persamaan</span>
+        <span>
+          © 2026 JARLE LAUCH · persamaan demi persamaan · dihosting di{' '}
+          <a href="https://js.org" target="_blank" rel="noreferrer">
+            js.org ↗
+          </a>
+        </span>
         <span>
           <a href="#top">kembali ke asal ↑</a>
         </span>
