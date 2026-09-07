@@ -354,10 +354,10 @@ function App() {
           <div className="aizen-grid">
             <div className="aizen-frame stagger" style={{ transitionDelay: '80ms' }}>
               <img
-                src="/porto/aizen.jpg"
-                alt="Aizen Sousuke — Bleach (Pinterest portrait, © Tite Kubo / Shueisha)"
+                src="/porto/aizen.png"
+                alt="Aizen Sousuke — Bleach (official art, © Tite Kubo / Shueisha, Studio Pierrot)"
                 loading="lazy"
-                onError={(e) => { e.currentTarget.src = 'https://i.pinimg.com/736x/63/32/47/6332477875ef2c84777440c302b39b58.jpg'; e.currentTarget.onerror = null }}
+                onError={(e) => { e.currentTarget.src = 'https://bleach-anime.com/assets/img/character/chara_50.png'; e.currentTarget.onerror = null }}
               />
               <span>藍染 惣右介 — Aizen Sōsuke</span>
               <span className="aizen-cap">“sejak awal, tak ada yang berdiri di langit”</span>
