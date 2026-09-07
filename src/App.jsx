@@ -44,6 +44,14 @@ const PROJECTS = [
     linkLabel: 'profil',
   },
   {
+    title: 'clover — atelier semanggi [sketsa]',
+    desc: 'Atelier toko minimalis semanggi 4 daun — sage, moss, paper. Etalase editorial tanpa payment (harga ???), contoh Midtrans DANA/GoPay, anti-spam cooldown. Sketsa porto.',
+    tokens: ['HTML', 'Tailwind', 'Midtrans', 'atelier'],
+    url: 'https://jarlelauch.github.io/clover-shop/',
+    linkLabel: 'live',
+    extra: { url: 'https://github.com/jarlelauch/clover-shop', label: 'repo' },
+  },
+  {
     title: 'porto — situs ini',
     desc: 'Portofolio manuskrip matematika; dibangun di atas React dan dihidupkan lewat GitHub Pages.',
     tokens: ['React', 'Vite', 'GitHub Pages'],
@@ -186,6 +194,67 @@ function App() {
   const hero = useReveal()
   const aizen = useReveal()
   const kontak = useReveal()
+
+  // stealth aizen audio: area di mana foto mulai keload → interaksi = play theme (tanpa UI)
+  useEffect(() => {
+    const frame = document.querySelector('.aizen-frame')
+    const img = frame?.querySelector('img')
+    if (!frame || !img) return
+    // audio sistem saja (tanpa UI)
+    const audio = new Audio(`${import.meta.env.BASE_URL}aizen-theme.mp3`)
+    audio.preload = 'auto'
+    audio.volume = 0.55
+    audio.loop = false
+    let overlay = null
+    let armed = false
+    const play = () => {
+      if (audio.paused) audio.play().catch(()=>{})
+      else { audio.currentTime = 0; audio.play().catch(()=>{}) }
+    }
+    const createOverlay = () => {
+      if (overlay) return
+      const rect = img.getBoundingClientRect()
+      // fallback ke frame jika img belum punya size
+      const target = rect.width > 10 ? img : frame
+      const r = target.getBoundingClientRect()
+      overlay = document.createElement('div')
+      // sistem saja, tidak tampil sebagai UI
+      overlay.setAttribute('aria-hidden', 'true')
+      overlay.style.position = 'absolute'
+      overlay.style.left = '0'
+      overlay.style.top = '0'
+      overlay.style.width = '100%'
+      overlay.style.height = '100%'
+      overlay.style.opacity = '0'
+      overlay.style.pointerEvents = 'auto'
+      overlay.style.cursor = 'default'
+      overlay.style.zIndex = '5'
+      // tempatkan di dalam frame (frame sudah relative di CSS)
+      frame.style.position = 'relative'
+      frame.appendChild(overlay)
+      // interaksi = play (hover, klik, sentuh)
+      overlay.addEventListener('pointerenter', play, { passive: true })
+      overlay.addEventListener('click', play)
+      overlay.addEventListener('touchstart', play, { passive: true })
+      // juga kalau kursor melintas area frame saat foto sudah keload
+      frame.addEventListener('pointerenter', play, { passive: true, once: false })
+      armed = true
+    }
+    // select area di mana foto mulai keload (IntersectionObserver)
+    const obs = new IntersectionObserver((entries)=>{
+      for (const e of entries){
+        if (e.isIntersecting){
+          createOverlay()
+          // preload audio saat mulai terlihat
+          audio.load()
+        }
+      }
+    }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' })
+    obs.observe(img)
+    // fallback: kalau observer tidak support atau sudah di viewport
+    if (img.complete) createOverlay()
+    return () => { obs.disconnect(); if (overlay) overlay.remove(); audio.pause(); }
+  }, [])
 
   return (
     <>
