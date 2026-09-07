@@ -528,7 +528,6 @@ html.bh-active .bh-hint { opacity: 1; }
     transition: none;
   }
 }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .section {
