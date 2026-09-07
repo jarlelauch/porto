@@ -98,14 +98,14 @@ export default function AstroField() {
         const dx0 = mouseX - sx, dy0 = mouseY - sy
         const d0 = Math.hypot(dx0, dy0) || 1
         const ang0 = Math.atan2(dy0, dx0)
-        const speed = 52 + Math.random()*28
+        const speed = 78 + Math.random()*34
         selectDust.push({
           ch, x: sx, y: sy,
-          vx: Math.cos(ang0)*speed + (Math.random()-0.5)*10,
-          vy: Math.sin(ang0)*speed + (Math.random()-0.5)*10,
+          vx: Math.cos(ang0)*speed + (Math.random()-0.5)*12,
+          vy: Math.sin(ang0)*speed + (Math.random()-0.5)*12,
           size: 14 + Math.random()*6,
           a: 1, life: 1,
-          spin: (Math.random()-0.5)*0.22,
+          spin: (Math.random()-0.5)*0.28,
           rot: Math.random()*Math.PI*2,
         })
       }
@@ -119,8 +119,8 @@ export default function AstroField() {
         }
         sel.removeAllRanges()
       }catch{}
-      // boost BH biar nyedot ganas
-      massTarget = 2.9; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 1400)
+      // boost BH biar nyedot ganas — lebih besar + cepat pas select
+      massTarget = 3.0; setTimeout(()=>{ if(!mouseDown) massTarget=1 }, 900)
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
@@ -387,21 +387,21 @@ export default function AstroField() {
         }
       }
 
-      // select-suck — huruf yang di-select beneran spiral masuk BH (screen coords) — FIX: grav ganas biar keliatan
+      // select-suck — lebih cepet — grav ganas + speed tinggi biar langsung melesat
       if(!reduce && selectDust.length){
         for(let i=selectDust.length-1;i>=0;i--){
           const p=selectDust[i]
           const dx=mouseX - p.x, dy=mouseY - p.y, d=Math.hypot(dx,dy)
-          const grav = mass*0.38 * Math.exp(-d/58) + 0.09
+          const grav = mass*0.52 * Math.exp(-d/52) + 0.14
           const ang=Math.atan2(dy,dx)
-          p.vx += Math.cos(ang)*grav*22
-          p.vy += Math.sin(ang)*grav*22
-          p.vx += -Math.sin(ang)*grav*8
-          p.vy += Math.cos(ang)*grav*8
-          p.vx *= 0.975; p.vy *= 0.975
-          p.x += p.vx * 0.020; p.y += p.vy * 0.020
+          p.vx += Math.cos(ang)*grav*28
+          p.vy += Math.sin(ang)*grav*28
+          p.vx += -Math.sin(ang)*grav*10
+          p.vy += Math.cos(ang)*grav*10
+          p.vx *= 0.970; p.vy *= 0.970
+          p.x += p.vx * 0.024; p.y += p.vy * 0.024
           p.rot += p.spin
-          p.life -= 0.011
+          p.life -= 0.018
           p.a = Math.max(0, p.life) * 0.98
           const horizon = 10+mass*2.2
           if(d < horizon+4 || p.life<=0){
