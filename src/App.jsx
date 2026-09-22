@@ -59,6 +59,22 @@ const PROJECTS = [
     linkLabel: 'live',
     extra: { url: 'https://github.com/jarlelauch/porto', label: 'repo' },
   },
+  {
+    title: 'math-native — aplikasi belajar matematika offline',
+    desc: 'Mandiri tanpa install Obsidian. UI ala vault: Beranda → Teori → Soal → Bank Rumus → Aktivasi. 18 teori + 18 soal + rumus + projek, embed GeoGebra/Desmos. Freemium (teori full, soal 3/hari), trial 7 hari, PRO via key individual offline.',
+    tokens: ['Flutter', 'Dart', 'offline-first', 'lisensi-HMAC'],
+    url: 'https://github.com/jarlelauch/math-native',
+    linkLabel: 'repo',
+    extra: { url: 'https://github.com/jarlelauch/math-native/releases', label: 'APK' },
+  },
+  {
+    title: 'physics-native — aplikasi belajar fisika offline',
+    desc: 'Kembaran fisika: besaran-satuan, mekanika, fluida, termo, gelombang-optik, listrik-magnet, modern. 32 teori + 13 soal + rumus + eksperimen PhET. Wajib cek satuan + dimensi. Trial 7 hari, key PRO per user (BDL berlaku untuk kedua app).',
+    tokens: ['Flutter', 'PhET', 'offline-first', 'lisensi-HMAC'],
+    url: 'https://github.com/jarlelauch/physics-native',
+    linkLabel: 'repo',
+    extra: { url: 'https://github.com/jarlelauch/physics-native/releases', label: 'APK' },
+  },
 ]
 
 const SPEC = `$ whoami
