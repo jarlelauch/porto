@@ -65,7 +65,7 @@ const PROJECTS = [
     tokens: ['Flutter', 'Dart', 'offline-first', 'lisensi-HMAC'],
     url: 'https://github.com/jarlelauch/math-native',
     linkLabel: 'repo',
-    extra: { url: 'https://github.com/jarlelauch/math-native/releases', label: 'APK' },
+    extra: { url: 'https://github.com/jarlelauch/math-native/releases/download/v1.0.0/math-native-v1.0.0.apk', label: 'APK' },
   },
   {
     title: 'physics-native — aplikasi belajar fisika offline',
@@ -73,7 +73,7 @@ const PROJECTS = [
     tokens: ['Flutter', 'PhET', 'offline-first', 'lisensi-HMAC'],
     url: 'https://github.com/jarlelauch/physics-native',
     linkLabel: 'repo',
-    extra: { url: 'https://github.com/jarlelauch/physics-native/releases', label: 'APK' },
+    extra: { url: 'https://github.com/jarlelauch/physics-native/releases/download/v1.0.0/physics-native-v1.0.0.apk', label: 'APK' },
   },
 ]
 
